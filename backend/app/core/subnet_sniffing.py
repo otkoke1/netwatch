@@ -5,8 +5,6 @@ from netifaces import AF_INET
 from pygments.lexer import default
 from scapy.layers.l2 import Ether, ARP, srp
 
-
-
 def get_local_subnet():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
