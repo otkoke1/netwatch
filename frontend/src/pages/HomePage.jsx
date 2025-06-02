@@ -12,10 +12,10 @@ export default function HomePage() {
           <div>
             <h1 className="text-3xl font-bold mb-12 tracking-wide">Netwatch</h1>
             <nav className="text-lg">
-              <SidebarLink to="/network" icon={Network}>Network</SidebarLink>
-              <SidebarLink to="#" icon={Globe}>Internet</SidebarLink>
-              <SidebarLink to="#" icon={Wrench}>Tools</SidebarLink>
-              <SidebarLink to="/rtscan" icon={Scan}>Real-Time Scan</SidebarLink>
+              <SidebarLink to="/network" icon={Network} className="text-white">Network</SidebarLink>
+              <SidebarLink to="#" icon={Globe} className="text-white" >Internet</SidebarLink>
+              <SidebarLink to="#" icon={Wrench} className="text-white" >Tools</SidebarLink>
+              <SidebarLink to="/rtscan" icon={Scan} className="text-white" >Real-Time Scan</SidebarLink>
             </nav>
           </div>
 
@@ -35,12 +35,11 @@ export default function HomePage() {
   );
 }
 
-function SidebarLink({ to, icon: Icon, children }) {
+function SidebarLink({ to, icon: Icon, children, className = "" }) {
   return (
     <Link
       to={to}
-      className="flex items-center gap-3 px-4 py-2 rounded transition duration-200 hover:bg-[#1B3C73] hover:underline mb-6"
-    >
+      className={`flex items-center gap-3 px-4 py-2 rounded transition duration-200 hover:bg-[#1B3C73] hover:underline mb-6 ${className}`}>
       {Icon && <Icon size={20} />}
       {children}
     </Link>

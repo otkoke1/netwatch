@@ -18,7 +18,7 @@ def live_host_discovery():
     print(f"[*] Scanning subnet: {subnet}")
 
     packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=subnet)
-    ans, _ = srp(packet, timeout=2 , verbose=False)
+    ans, _ = srp(packet, timeout=2 , verbose=False, iface="Ethernet")
 
     hosts = []
     now = time.strftime('%Y-%m-%d %H:%M:%S')

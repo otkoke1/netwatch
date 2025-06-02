@@ -40,7 +40,22 @@ def get_gateway_ip():
         return default_gateway[0]
     return None
 
+def get_mac(ip):
+    pkt = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip)
+    ans, _ = srp(pkt, timeout=2, verbose=False, iface="Ethernet")
+    for _, rcv in ans:
+        return rcv.hwsrc
+    return None
+
+
 if __name__ == "__main__":
-    print("Detected Subnet:", get_local_subnet())
-    print("Local Address: ", get_local_ip())
-    print("Default Gateway IP:", get_gateway_ip())
+    subnet = get_local_subnet()
+    local_ip = get_local_ip()
+    gateway_ip = get_gateway_ip()
+    gateway_mac = get_mac(gateway_ip) if gateway_ip else None
+
+    print("Detected Subnet:", subnet)
+    print("Local Address: ", local_ip)
+    print("Default Gateway IP:", gateway_ip)
+    print("Default Gateway MAC:", gateway_mac)
+
