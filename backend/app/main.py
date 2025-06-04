@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.scanner import network_api
+from backend.app.scanner.network_api import get_subnet
 
 
 app = FastAPI()
@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 
-app.include_router(network_api.get_subnet)
+app.include_router(get_subnet)
 
 
 

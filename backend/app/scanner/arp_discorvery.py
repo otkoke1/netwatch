@@ -18,7 +18,7 @@ def live_host_discovery():
     print(f"[*] Scanning subnet: {subnet}")
 
     packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=subnet)
-    ans, _ = srp(packet, timeout=2 , verbose=False, iface="Ethernet")
+    ans, _ = srp(packet, timeout=2 , verbose=False)
 
     hosts = []
     now = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -33,8 +33,8 @@ def live_host_discovery():
             "Mac Address": mac,
             "Hostname" : hostname,
             "Last Heard": now,
-            "Availability": True,
-            "Response Time": 0
+            "Availability": None,
+            "Response Time": None
         })
     if not hosts:
         print("[!] No response received")

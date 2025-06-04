@@ -14,10 +14,10 @@ export default function NetworkPage() {
 
   const fetchNetworkInfo = async () => {
     try {
-      const response = await fetch("http://localhost:8000/networkinfo"); // Bạn có thể đổi thành /network-info nếu backend sửa
+      const response = await fetch("http://localhost:8000/networkinfo");
       const data = await response.json();
 
-      if (data?.subnet) {
+      if (data) {
         setNetworkInfo({
           subnet: data.subnet || "",
           gateway_ip: data.gateway_ip || "",
@@ -50,7 +50,7 @@ export default function NetworkPage() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 bg-[#C1E8FF] flex flex-col items-start justify-start pt-12 pl-10 font-sans">
+      <main className="flex-1 bg-[#C1E8FF] flex flex-col items-start justify-start pt-12 pl-10 font-sans overflow-y-auto pb-12">
         <div className="text-2xl font-semibold text-[#052659]">
           Your Subnet: <span className="font-bold">{networkInfo.subnet}</span>
         </div>
@@ -60,11 +60,11 @@ export default function NetworkPage() {
         </button>
 
         <div className="flex items-center w-full mt-16">
-          <span className="text-xl font-semibold text-[#052659] mr-4">Your Network Setup</span>
+          <span className="text-xl font-semibold text-[#052659] mr-4">Network Information</span>
           <div className="flex-grow max-w-[569px] min-h-0.5 bg-blue-500"></div>
         </div>
 
-        {/* Table */}
+        {/* Table 1 */}
         <table className="mt-6 w-full max-w-3xl table-auto bg-white rounded-lg shadow-md">
           <tbody className="text-[#052659] text-sm">
             <Row label="Netmask" value={networkInfo.subnet} />
@@ -75,6 +75,23 @@ export default function NetworkPage() {
             <Row label="Interface Type" value={networkInfo.interface_type} />
           </tbody>
         </table>
+
+        <div className="flex items-center w-full mt-16">
+          <span className="text-xl font-semibold text-[#052659] mr-4">Setup</span>
+          <div className="flex-grow max-w-[715px] min-h-0.5 bg-blue-500"></div>
+        </div>
+
+        {/* Table 2 */}
+        <table className="mt-6 w-full max-w-3xl table-auto bg-white rounded-lg shadow-md">
+          <tbody className="text-[#052659] text-sm">
+            <Row label="ISP" value={networkInfo.subnet} />
+            <Row label="Public Address" value={networkInfo.gateway_ip} />
+            <Row label="Hostname" value={networkInfo.gateway_mac} />
+            <Row label="Location" value={networkInfo.local_ip} />
+            <Row label="Timezone" value={networkInfo.dns} />
+          </tbody>
+        </table>
+
       </main>
     </div>
   );
