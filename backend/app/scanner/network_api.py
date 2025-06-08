@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from backend.app.core.subnet_sniffing import get_local_subnet, get_local_ip, get_gateway_ip, get_gateway_mac
+from backend.app.core.subnet_sniffing import get_local_subnet, get_local_ip, get_gateway_ip, get_gateway_mac, \
+    find_active_interface
 
 get_subnet = APIRouter()
 
@@ -9,13 +10,15 @@ def scan_subnet():
         subnet = str(get_local_subnet())
         local_ip = str(get_local_ip())
         gateway_ip = str(get_gateway_ip())
-        gateway_mac = str(get_gateway_mac(gateway_ip)) if gateway_ip else None
+        iface_name = str(find_active_interface())
+        gateway_mac = str(get_gateway_mac(gateway_ip, iface_name)) if gateway_ip and iface_name else None
 
         return {
             "subnet": subnet,
             "local_ip": local_ip,
             "gateway_ip": gateway_ip,
-            "gateway_mac": gateway_mac
+            "gateway_mac": gateway_mac,
+            "interface_type": iface_name
         }
     except Exception as e:
         return {"error": str(e)}
