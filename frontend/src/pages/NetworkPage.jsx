@@ -39,11 +39,15 @@ export default function NetworkPage() {
       {/* Sidebar */}
       <aside className="w-1/5 bg-[#052659] text-white p-6">
         <div>
-          <h1 className="text-3xl font-bold mb-12 tracking-wide">Netwatch</h1>
+          <Link to="/" className="block w-fit">
+            <h1 className="text-3xl font-bold mb-12 tracking-wide cursor-pointer text-white">
+              Netwatch
+            </h1>
+          </Link>
           <nav className="text-lg">
             <SidebarLink to="/network" icon={Network}>Network</SidebarLink>
-            <SidebarLink to="#" icon={Globe}>Internet</SidebarLink>
-            <SidebarLink to="#" icon={Wrench}>Tools</SidebarLink>
+            <SidebarLink to="/internet" icon={Globe}>Internet</SidebarLink>
+            <SidebarLink to="/tools" icon={Wrench}>Tools</SidebarLink>
             <SidebarLink to="/rtscan" icon={Scan}>Real-Time Scan</SidebarLink>
           </nav>
         </div>
