@@ -56,21 +56,6 @@ def get_gateway_mac(ip, iface_name):
         return rcv.hwsrc
     return "Unable to detect MAC address"
 
-def get_dns():
-    system = platform.system()
-    if system == "Windows":
-        try:
-            output = subprocess.check_output("nslookup", shell=True, text=True)
-            lines = output.splitlines()
-            for i, line in enumerate(lines):
-                if "Default Server" in line or "DNS request time out" in line:
-                    continue
-                if "Address" in line:
-                    dns_ip = line.split(":")[-1].strip()
-                    return dns_ip
-        except Exception as e:
-            print("Error getting DNS:", e)
-            return "Unable to detect DNS"
 
 def find_active_interface():
     pythoncom.CoInitialize()
@@ -80,16 +65,7 @@ def find_active_interface():
             return adapter.NetConnectionID  # Return the interface name
     return None
 
-def find_ips():
-    pass
-
-def find_public():
-    pass
-
-def find_location():
-    pass
-
-def get_timezone():
+def get_setup_info():
     pass
 
 
@@ -106,7 +82,6 @@ if __name__ == "__main__":
     print("Default Gateway IP:", gateway_ip)
     print("Default Gateway MAC:", gateway_mac)
     print("Current using Network Interface:", iface_name)
-    print("DNS Server:", get_dns())
 
 
 
