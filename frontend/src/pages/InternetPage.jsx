@@ -1,49 +1,56 @@
 import { Link } from "react-router-dom";
-import { Globe, Network, Scan, Wrench } from "lucide-react";
+import {Scan, Wifi} from "lucide-react";
 
 export default function InternetPage() {
   return (
-    <div className="flex h-screen w-screen font-sans">
-      {/* Sidebar */}
-      <aside className="w-1/5 bg-[#052659] text-white p-6">
-        <div>
-          <Link to="/" className="block w-fit">
-              <h1 className="text-3xl font-bold mb-12 tracking-wide cursor-pointer text-white">
-                Netwatch
-              </h1>
-            </Link>
-          <nav className="text-lg">
-            <SidebarLink to="/network" icon={Network}>Network</SidebarLink>
-            <SidebarLink to="/internet" icon={Globe}>Internet</SidebarLink>
-            <SidebarLink to="/tools" icon={Wrench}>Tools</SidebarLink>
-            <SidebarLink to="/rtscan" icon={Scan}>Real-Time Scan</SidebarLink>
-          </nav>
-        </div>
-      </aside>
+    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black-700 text-white font-sans flex flex-col relative">
+      {/* Navbar */}
+      <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
+        <Link to="/" className="block w-fit">
+          <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
+            Netwatch
+          </h1>
+        </Link>
+        <nav className="flex gap-8 justify-start ml-auto">
+          <NavbarLink to="/network">Network</NavbarLink>
+          <NavbarLink to="/internet">Internet</NavbarLink>
+          <NavbarLink to="/tools">Tools</NavbarLink>
+          <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
+        </nav>
+      </header>
 
-      {/* Main content */}
-      <main className="flex-1 bg-[#C1E8FF] flex flex-col items-start justify-start pt-12 pl-10 font-sans overflow-y-auto pb-12">
-        <div className="text-2xl font-semibold text-[#052659]">
-          {/* Placeholder for Internet-specific title or content */}
-          Internet
-        </div>
+      {/* Hero Section */}
+      <section className="py-16 px-4 lg:px-16 text-center relative">
+        <h2 className="text-3xl lg:text-4xl font-bold mb-4">Internet Performance</h2>
+        <p className="text-md lg:text-lg text-gray-200">Monitor and test your internet speed and reliability</p>
+        <Wifi size={40} className="text-white mx-auto mt-6" />
+      </section>
 
-        <div className="flex items-center w-full mt-16">
-          <span className="text-xl font-semibold text-[#052659] mr-4">Latest Speeed Test</span>
-          <div className="flex-grow max-w-[569px] min-h-0.5 bg-blue-500"></div>
+      {/* Internet Information Section */}
+      <section className="py-12 px-4 lg:px-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold text-white">Latest Speed Test</h3>
+            <p className="text-1xl font-bold text-white">Last Update: </p>
+          </div>
+          <div className="bg-white bg-opacity-20 rounded-lg shadow-md p-6">
+            <p className="text-gray-200 text-sm">Placeholder for speed test results or internet performance metrics.</p>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center py-6 mt-auto">
+        <p className="text-sm">© 2025 Netwatch — All rights reserved</p>
+        <p className="text-xs opacity-70 mt-1">Contact us at support@netwatch.io</p>
+      </footer>
     </div>
   );
 }
 
-function SidebarLink({ to, icon: Icon, children }) {
+function NavbarLink({ to, children }) {
   return (
-    <Link
-      to={to}
-      className="flex items-center gap-3 px-4 py-2 rounded transition duration-200 hover:bg-[#1B3C73] hover:underline mb-6 text-white"
-    >
-      {Icon && <Icon size={20} />}
+    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
       {children}
     </Link>
   );

@@ -23,7 +23,7 @@ def host_availability_check(ip):
     except Exception:
         return False
 
-def live_host_discovery():
+def live_host_discovery(verbose=False):
     iface_name = find_active_interface()
     subnet = str(get_local_subnet())
     print(f"[*] Scanning subnet: {subnet} on interface: {iface_name}")
@@ -46,11 +46,13 @@ def live_host_discovery():
             "Availability": availability,
             "Response Time": None
         })
-    if not hosts:
-        print("[!] No response received")
-        return []
+    if verbose:
+        if not hosts:
+            print("[!] No response received")
+        else:
+            print(tabulate(hosts, headers="keys", tablefmt="fancy-grid"))
+            print(f"Total Hosts Discovered: {len(hosts)}")
 
-    print(tabulate(hosts, headers="keys", tablefmt="fancy-grid"))
     return hosts
 
 

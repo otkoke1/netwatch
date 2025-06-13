@@ -1,113 +1,88 @@
 import { Link } from "react-router-dom";
-import { Globe, Network, Scan, Wrench } from "lucide-react";
-import { useState } from "react";
+import {Globe} from "lucide-react";
+import {useEffect, useState} from "react";
 
 export default function NetworkPage() {
-  const [networkInfo, setNetworkInfo] = useState({
-    subnet: "",
-    gateway_ip: "",
-    gateway_mac: "",
-    local_ip: "",
-    dns: "",
-    interface_type: ""
-  });
-
-  const fetchNetworkInfo = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/networkinfo");
-      const data = await response.json();
-
-      if (data) {
-        setNetworkInfo({
-          subnet: data.subnet || "",
-          gateway_ip: data.gateway_ip || "",
-          gateway_mac: data.gateway_mac || "",
-          local_ip: data.local_ip || "",
-          dns: data.dns || "",
-          interface_type: data.interface_type || "",
-        });
-      } else {
-        console.error("Missing 'subnet' field in response");
-      }
-    } catch (err) {
-      console.error("Failed to fetch network info", err);
-    }
-  };
+  const [networkInfo, setNetworkInfo] = useState(null);
+  useEffect(() => {
+    fetch("http://localhost:8000/api/networkinfo")
+      .then(response => response.json())
+      .then(data => setNetworkInfo(data))
+      .catch(error => console.error("Error fetching network info:", error));
+  }, []);
 
   return (
-    <div className="flex h-screen w-screen font-sans">
-      {/* Sidebar */}
-      <aside className="w-1/5 bg-[#052659] text-white p-6">
-        <div>
+    <div className="h-screen w-screen bg-gradient-to-r from-orange-950  to-black-700 text-white font-sans flex flex-col relative overflow-y-auto">
+      {/* Navbar */}
+        <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
           <Link to="/" className="block w-fit">
-            <h1 className="text-3xl font-bold mb-12 tracking-wide cursor-pointer text-white">
+            <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
               Netwatch
             </h1>
           </Link>
-          <nav className="text-lg">
-            <SidebarLink to="/network" icon={Network}>Network</SidebarLink>
-            <SidebarLink to="/internet" icon={Globe}>Internet</SidebarLink>
-            <SidebarLink to="/tools" icon={Wrench}>Tools</SidebarLink>
-            <SidebarLink to="/rtscan" icon={Scan}>Real-Time Scan</SidebarLink>
+          <nav className="flex gap-8 justify-start ml-auto">
+            <NavbarLink to="/network">Network</NavbarLink>
+            <NavbarLink to="/internet">Internet</NavbarLink>
+            <NavbarLink to="/tools">Tools</NavbarLink>
+            <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
           </nav>
+        </header>
+
+      {/* Hero Section */}
+      <section className="py-16 px-4 lg:px-16 text-center relative">
+        <h2 className="text-3xl lg:text-4xl font-bold mb-4">Network Monitoring</h2>
+        <p className="text-md lg:text-lg text-gray-200">Keep track of your network details and configurations</p>
+        <Globe size={40} className="text-white mx-auto mt-6" />
+      </section>
+
+      {/* Network Information Section */}
+      <section className="py-12 px-4 lg:px-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold text-white">Network Information</h3>
+            <p className="text-1xl font-bold text-white">
+              Last Update: {networkInfo ? new Date().toLocaleTimeString() : "Loading..."}
+            </p>
+          </div>
+          {networkInfo ? (
+          <table className="w-full rounded-lg shadow-md">
+            <tbody className="text-gray-200 text-sm">
+              <Row label="Subnet" value={networkInfo.subnet} />
+              <Row label="Gateway IP Address" value={networkInfo.gateway_ip} />
+              <Row label="Gateway MAC Address" value={networkInfo.gateway_mac} />
+              <Row label="Local IP" value={networkInfo.local_ip} />
+              <Row label="Interface Type" value={networkInfo.interface_type} />
+            </tbody>
+          </table>
+              ) : (
+                  <p className="text-gray-400 text-sm">Loading network info...</p>
+              )}
         </div>
-      </aside>
+      </section>
 
-      {/* Main content */}
-      <main className="flex-1 bg-[#C1E8FF] flex flex-col items-start justify-start pt-12 pl-10 font-sans overflow-y-auto pb-12">
-        <div className="text-2xl font-semibold text-[#052659]">
-          Your Subnet: <span className="font-bold">{networkInfo.subnet}</span>
-        </div>
-        <button className="mt-4 px-6 py-2 bg-gradient-to-r from-[#1B3C73] to-[#144272] text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 hover:brightness-110 transition-all duration-200 ease-in-out"
-          onClick={fetchNetworkInfo}>
-            Scan
-        </button>
+        {/* Devices Section */}
+        <section className="py-12 px-4 lg:px-16">
+            <div className="max-w-6xl mx-auto">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-2xl font-bold text-white">Devices</h3>
+              </div>
+            </div>
+        </section>
 
-        <div className="flex items-center w-full mt-16">
-          <span className="text-xl font-semibold text-[#052659] mr-4">Network Information</span>
-          <div className="flex-grow max-w-[569px] min-h-0.5 bg-blue-500"></div>
-        </div>
 
-        {/* Table 1 */}
-        <table className="mt-6 w-full max-w-3xl table-auto bg-white rounded-lg shadow-md">
-          <tbody className="text-[#052659] text-sm">
-            <Row label="Netmask" value={networkInfo.subnet} />
-            <Row label="Gateway IP Address" value={networkInfo.gateway_ip} />
-            <Row label="Gateway MAC Address" value={networkInfo.gateway_mac} />
-            <Row label="Local IP" value={networkInfo.local_ip} />
-            <Row label="DNS" value={networkInfo.dns} />
-            <Row label="Interface Type" value={networkInfo.interface_type} />
-          </tbody>
-        </table>
 
-        <div className="flex items-center w-full mt-16">
-          <span className="text-xl font-semibold text-[#052659] mr-4">Setup</span>
-          <div className="flex-grow max-w-[715px] min-h-0.5 bg-blue-500"></div>
-        </div>
-
-        {/* Table 2 */}
-        <table className="mt-6 w-full max-w-3xl table-auto bg-white rounded-lg shadow-md">
-          <tbody className="text-[#052659] text-sm">
-            <Row label="ISP" value={networkInfo.subnet} />
-            <Row label="Public Address" value={networkInfo.gateway_ip} />
-            <Row label="Hostname" value={networkInfo.gateway_mac} />
-            <Row label="Location" value={networkInfo.local_ip} />
-            <Row label="Timezone" value={networkInfo.dns} />
-          </tbody>
-        </table>
-
-      </main>
+      {/* Footer */}
+      <footer className="text-center py-6 mt-auto">
+        <p className="text-sm">© 2025 Netwatch — All rights reserved</p>
+        <p className="text-xs opacity-70 mt-1">Contact us at support@netwatch.io</p>
+      </footer>
     </div>
   );
 }
 
-function SidebarLink({ to, icon: Icon, children }) {
+function NavbarLink({ to, children }) {
   return (
-    <Link
-      to={to}
-      className="flex items-center gap-3 px-4 py-2 rounded transition duration-200 hover:bg-[#1B3C73] hover:underline mb-6 text-white"
-    >
-      {Icon && <Icon size={20} />}
+    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
       {children}
     </Link>
   );
@@ -115,7 +90,7 @@ function SidebarLink({ to, icon: Icon, children }) {
 
 function Row({ label, value }) {
   return (
-    <tr className="border-b">
+    <tr className="border-b border-gray-600">
       <td className="font-semibold px-4 py-3 w-1/3">{label}</td>
       <td className="px-4 py-3">{value || "-"}</td>
     </tr>

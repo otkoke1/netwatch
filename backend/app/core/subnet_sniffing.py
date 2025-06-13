@@ -65,8 +65,12 @@ def find_active_interface():
             return adapter.NetConnectionID  # Return the interface name
     return None
 
-def get_setup_info():
-    pass
+def get_personal_device_specs():
+    c = wmi.WMI()
+    for board in c.Win32_BaseBoard():
+        return f"{board.Manufacturer} {board.Product}"
+    return "Unknown Device"
+
 
 
 
@@ -76,12 +80,15 @@ if __name__ == "__main__":
     gateway_ip = get_gateway_ip()
     iface_name = find_active_interface()
     gateway_mac = get_gateway_mac(gateway_ip, iface_name) if gateway_ip and iface_name else None
+    device_specs = get_personal_device_specs()
 
     print("Detected Subnet:", subnet)
     print("Local Address: ", local_ip)
     print("Default Gateway IP:", gateway_ip)
     print("Default Gateway MAC:", gateway_mac)
     print("Current using Network Interface:", iface_name)
+    print("Device Specs:", device_specs)
+
 
 
 

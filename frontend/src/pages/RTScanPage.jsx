@@ -1,63 +1,44 @@
 import { Link } from "react-router-dom";
-import { Globe, Network, Scan, Wrench } from "lucide-react";
+import { Scan } from "lucide-react";
 
 export default function RTScanPage() {
   return (
-    <div className="flex h-screen w-screen font-sans">
-      {/* Sidebar */}
-      <aside className="w-1/5 bg-[#052659] text-white p-6">
-        <div>
-          <Link to="/" className="block w-fit">
-            <h1 className="text-3xl font-bold mb-12 tracking-wide cursor-pointer text-white">
-              Netwatch
-            </h1>
-          </Link>
-          <nav className="text-lg">
-            <SidebarLink to="/network" icon={Network}>Network</SidebarLink>
-            <SidebarLink to="/internet" icon={Globe}>Internet</SidebarLink>
-            <SidebarLink to="/tools" icon={Wrench}>Tools</SidebarLink>
-            <SidebarLink to="/rtscan" icon={Scan}>Real-Time Scan</SidebarLink>
-          </nav>
-        </div>
-      </aside>
+    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black-700 text-white font-sans flex flex-col relative">
+      {/* Navbar */}
+      <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
+        <Link to="/" className="block w-fit">
+          <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
+            Netwatch
+          </h1>
+        </Link>
+        <nav className="flex gap-8 justify-start ml-auto">
+          <NavbarLink to="/network">Network</NavbarLink>
+          <NavbarLink to="/internet">Internet</NavbarLink>
+          <NavbarLink to="/tools">Tools</NavbarLink>
+          <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
+        </nav>
+      </header>
 
-      {/* Main content */}
-      <main className="flex-1 bg-[#C1E8FF] flex flex-col items-start justify-start pt-12 pl-10 overflow-y-auto pb-12">
-        <div className="text-2xl font-semibold text-[#052659]">
-          Real-Time Packet Scanner
-        </div>
+      {/* Hero Section */}
+      <section className="py-16 px-4 lg:px-16 text-center relative">
+        <h2 className="text-3xl lg:text-4xl font-bold mb-4">Real-Time Packet Scanner</h2>
+        <p className="text-md lg:text-lg text-gray-200">Analyze live network traffic and detect threats</p>
+        <Scan size={40} className="text-white mx-auto mt-6" />
+      </section>
 
-        <div className="flex items-center w-full mt-16">
-          <span className="text-xl font-semibold text-[#052659] mr-4">Live Capture</span>
-          <div className="flex-grow max-w-[715px] min-h-0.5 bg-blue-500"></div>
-        </div>
 
-        {/* Placeholder box for packet table */}
-        <div className="mt-6 w-full max-w-5xl bg-white p-6 rounded-lg shadow-md text-[#052659] text-sm">
-          <p>Placeholder.</p>
-        </div>
-
-        <div className="flex items-center w-full mt-16">
-          <span className="text-xl font-semibold text-[#052659] mr-4">Protocol & Threat Analysis</span>
-          <div className="flex-grow max-w-[715px] min-h-0.5 bg-blue-500"></div>
-        </div>
-
-        {/* Placeholder box for charts and analysis */}
-        <div className="mt-6 w-full max-w-5xl bg-white p-6 rounded-lg shadow-md text-[#052659] text-sm">
-          <p>Placeholder.</p>
-        </div>
-      </main>
+      {/* Footer */}
+      <footer className="text-center py-6 mt-auto">
+        <p className="text-sm">© 2025 Netwatch — All rights reserved</p>
+        <p className="text-xs opacity-70 mt-1">Contact us at support@netwatch.io</p>
+      </footer>
     </div>
   );
 }
 
-function SidebarLink({ to, icon: Icon, children }) {
+function NavbarLink({ to, children }) {
   return (
-    <Link
-      to={to}
-      className="flex items-center gap-3 px-4 py-2 rounded transition duration-200 hover:bg-[#1B3C73] hover:underline mb-6 text-white"
-    >
-      {Icon && <Icon size={20} />}
+    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
       {children}
     </Link>
   );

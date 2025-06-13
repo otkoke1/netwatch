@@ -1,71 +1,110 @@
 import { Link } from "react-router-dom";
-import { Network, Globe, Wrench, Scan, Router, MonitorSmartphone} from  "lucide-react";
+import { Router, MonitorSmartphone } from "lucide-react";
+import { useEffect, useState } from "react";
 
-function SidebarLink({ to, icon: Icon, children }) {
+function NavbarLink({ to, children }) {
   return (
-    <Link
-      to={to}
-      className="flex items-center gap-3 px-3 py-2 rounded transition duration-200 hover:bg-[#1B3C73] hover:underline mb-4 text-white text-base lg:text-lg xl:text-xl"
-    >
-      {Icon && <Icon size={20} className="lg:size-6 xl:size-7" />}
+    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
       {children}
     </Link>
   );
 }
 
 export default function HomePage() {
-  const boxes = Array.from({ length: 3 }, (_, i) => i);
+    const [networkInfo, setNetworkInfo] = useState(null);
+    const [connectedDevices, setConnectedDevices] = useState([]);
 
-  return (
-    <div className="flex h-screen w-screen font-sans">
-      {/* Sidebar */}
-      <aside className="w-1/4 lg:w-1/5 xl:w-1/6 min-w-[120px] lg:min-w-[180px] xl:min-w-[220px] bg-[#052659] text-white p-4 lg:p-6 xl:p-8 shadow-lg">
-        <div className="flex flex-col h-full justify-between">
-          <div>
-            <h1 className="text-xl lg:text-3xl xl:text-4xl font-bold mb-6 lg:mb-10 xl:mb-12 tracking-wide">
+    useEffect(() => {
+    fetch("http://localhost:8000/api/networkinfo")
+        .then(response => response.json())
+        .then(data => setNetworkInfo(data))
+        .catch(error => console.error("Error fetching network info:", error));
+
+    fetch("http://localhost:8000/api/connected-devices")
+        .then(response => response.json())
+        .then(data => {
+            if (data.total_devices !== undefined) {
+                setConnectedDevices(data.total_devices);
+            }
+        })
+        .catch(error => console.error("Error fetching connected devices:", error));
+    }, []);
+
+    const featureBoxes = [
+      {
+        name: "Connected Devices",
+        description: connectedDevices > 0
+          ? `Total Devices: ${connectedDevices}`
+          : "Findind Devices..."
+      },
+      {
+        name: "Internet Performance",
+        description: "Testing your internet download and upload"
+      },
+      {
+        name: "Security Measurement",
+        description: "Access powerful tools for network management."
+      },
+    ];
+
+    return (
+    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black-700 text-white font-sans flex flex-col relative">
+      {/* Navbar */}
+        <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
+          <Link to="/" className="block w-fit">
+            <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
               Netwatch
             </h1>
-            <div className="flex-grow max-w-[569px] min-h-0.5 bg-white"></div>
-            <br></br>
-            <nav>
-              <SidebarLink to="/network" icon={Network}>
-                Network
-              </SidebarLink>
-              <SidebarLink to="/internet" icon={Globe}>
-                Internet
-              </SidebarLink>
-              <SidebarLink to="/tools" icon={Wrench}>
-                Tools
-              </SidebarLink>
-              <SidebarLink to="/rtscan" icon={Scan}>
-                Real-Time Scan
-              </SidebarLink>
-            </nav>
-          </div>
-          <div className="mt-6 lg:mt-10 xl:mt-14 text-xs lg:text-sm xl:text-base opacity-70">
-            <p>Contact</p>
-          </div>
-        </div>
-      </aside>
+          </Link>
+          <nav className="flex gap-8 justify-start ml-auto">
+            <NavbarLink to="/network">Network</NavbarLink>
+            <NavbarLink to="/internet">Internet</NavbarLink>
+            <NavbarLink to="/tools">Tools</NavbarLink>
+            <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
+          </nav>
+        </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col bg-[#C1E8FF] font-sans">
-        <div className="min-h-[180px] lg:min-h-[270px] xl:min-h-[360px] bg-[#C1E8FF] border-b border-blue-200 flex flex-col items-center justify-center relative">
-          <MonitorSmartphone size={34} className="text-black -mt-40 absolute" style={{ right: '39%' }} />
-          <div className="absolute bg-black w-[2px] h-[80px]" style={{ right: '40%', top: '50%', transform: 'translateY(-50%)' }}></div>
-          <Router size={34} className="text-black absolute -mb-40" style={{ right: '39%' }} />
-        </div>
-        <div className="flex-grow bg-[#7DA0CA] flex items-end justify-center px-2 lg:px-6 xl:px-8 pb-4 lg:pb-6 xl:pb-8">
-          <div className="max-w-3xl lg:max-w-5xl xl:max-w-7xl w-full grid grid-cols-1 lg:grid-cols-3 gap-x-4 lg:gap-x-12 xl:gap-x-56 gap-y-4 lg:gap-y-6 xl:gap-y-8 p-2 lg:p-4 xl:p-6">
-            {boxes.map((idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-xl shadow-md w-[120px] h-[150px] lg:w-[240px] lg:h-[300px] xl:w-[280px] xl:h-[380px] mx-auto"
-              />
-            ))}
+      {/* Hero Section */}
+      <section className="py-16 px-4 lg:px-16 text-center relative">
+        <h2 className="text-3xl lg:text-4xl font-bold mb-4">Welcome to Netwatch</h2>
+        <p className="text-md lg:text-lg text-gray-200">Your personal network monitoring assistant</p>
+        <div className="flex justify-center items-center mt-10 relative flex-col lg:flex-row gap-8 lg:gap-16">
+          <div className="flex flex-col items-center mx-6 p-4 bg-white bg-opacity-10 rounded-lg shadow-lg hover:bg-opacity-20 transition-transform duration-300 hover:scale-105">
+            <MonitorSmartphone size={50} className="text-white mb-4 hover:scale-110 transition-transform duration-300" />
+            <p className="text-sm lg:text-base text-gray-300 font-medium">
+              {networkInfo ? networkInfo.device_specs : "Loading..."}
+            </p>
+          </div>
+          <div className="bg-white w-[2px] h-[40px] lg:h-[80px] my-4 lg:my-0"></div>
+          <div className="flex flex-col items-center mx-6 p-4 bg-white bg-opacity-10 rounded-lg shadow-lg hover:bg-opacity-20 transition-transform duration-300 hover:scale-105">
+            <Router size={50} className="text-white mb-4 hover:scale-110 transition-transform duration-300" />
+            <p className="text-sm lg:text-base text-gray-300 font-medium">
+              {networkInfo ? networkInfo.subnet : "Loading..."}
+            </p>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Feature Boxes */}
+      <section className="py-12 px-4 lg:px-16 ">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featureBoxes.map((box, index) => (
+            <div
+              key={index}
+                className="bg-white bg-opacity-20 rounded-xl shadow-md p-6 h-[180px] lg:h-[220px] flex flex-col items-center justify-center text-center text-gray-200 text-lg font-semibold"
+            >
+              <h3 className="text-xl font-bold mb-2">{box.name}</h3>
+              <p className="text-sm">{box.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center py-6 mt-auto">
+        <p className="text-sm">© 2025 Netwatch — All rights reserved</p>
+        <p className="text-xs opacity-70 mt-1">Contact us at dhung1838ygw@gmail.com</p>
+      </footer>
     </div>
   );
 }

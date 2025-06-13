@@ -1,50 +1,62 @@
 import { Link } from "react-router-dom";
-import { Globe, Network, Scan, Wrench } from "lucide-react";
+import { Wrench } from "lucide-react";
 
 export default function ToolsPage() {
   return (
-    <div className="flex h-screen w-screen font-sans">
-      {/* Sidebar */}
-      <aside className="w-1/5 bg-[#052659] text-white p-6">
-        <div>
-          <Link to="/" className="block w-fit">
-            <h1 className="text-3xl font-bold mb-12 tracking-wide cursor-pointer text-white">
-              Netwatch
-            </h1>
-          </Link>
-          <nav className="text-lg">
-            <SidebarLink to="/network" icon={Network}>Network</SidebarLink>
-            <SidebarLink to="/internet" icon={Globe}>Internet</SidebarLink>
-            <SidebarLink to="/tools" icon={Wrench}>Tools</SidebarLink>
-            <SidebarLink to="/rtscan" icon={Scan}>Real-Time Scan</SidebarLink>
-          </nav>
-        </div>
-      </aside>
+    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black-700 text-white font-sans flex flex-col relative">
+      {/* Navbar */}
+      <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
+        <Link to="/" className="block w-fit">
+          <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
+            Netwatch
+          </h1>
+        </Link>
+        <nav className="flex gap-8 justify-start ml-auto">
+          <NavbarLink to="/network">Network</NavbarLink>
+          <NavbarLink to="/internet">Internet</NavbarLink>
+          <NavbarLink to="/tools">Tools</NavbarLink>
+          <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
+        </nav>
+      </header>
 
-      {/* Main content */}
-      <main className="flex-1 bg-[#C1E8FF] flex flex-col items-start justify-start pt-12 pl-10 font-sans overflow-y-auto pb-12">
-        <div className="text-2xl font-semibold text-[#052659]">
-          {/* Placeholder for Internet-specific title or content */}
-          Tools
-        </div>
+      {/* Hero Section */}
+      <section className="py-16 px-4 lg:px-16 text-center relative">
+        <h2 className="text-3xl lg:text-4xl font-bold mb-4">Network Tools</h2>
+        <p className="text-md lg:text-lg text-gray-200">Access powerful tools for network management</p>
+        <Wrench size={40} className="text-white mx-auto mt-6" />
+      </section>
 
-        <div className="flex items-center w-full mt-16">
-          <span className="text-xl font-semibold text-[#052659] mr-4">Check your internet activity</span>
-          <div className="flex-grow max-w-[569px] min-h-0.5 bg-blue-500"></div>
+      {/* Tools Section */}
+      <section className="py-12 px-4 lg:px-16">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <ToolBox name="Ping Test" description="Check connectivity to a specific host" />
+          <ToolBox name="Traceroute" description="Trace the path packets take to a host" />
+          <ToolBox name="Port Scanner" description="Scan for open ports on a host" />
         </div>
-      </main>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center py-6 mt-auto">
+        <p className="text-sm">© 2025 Netwatch — All rights reserved</p>
+        <p className="text-xs opacity-70 mt-1">Contact us at support@netwatch.io</p>
+      </footer>
     </div>
   );
 }
 
-function SidebarLink({ to, icon: Icon, children }) {
+function NavbarLink({ to, children }) {
   return (
-    <Link
-      to={to}
-      className="flex items-center gap-3 px-4 py-2 rounded transition duration-200 hover:bg-[#1B3C73] hover:underline mb-6 text-white"
-    >
-      {Icon && <Icon size={20} />}
+    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
       {children}
     </Link>
+  );
+}
+
+function ToolBox({ name, description }) {
+  return (
+    <div className="bg-white bg-opacity-20 rounded-xl shadow-md p-6 h-[180px] lg:h-[220px] flex flex-col items-center justify-center text-center text-gray-200 text-lg font-semibold">
+      <h3 className="text-xl font-bold mb-2">{name}</h3>
+      <p className="text-sm">{description}</p>
+    </div>
   );
 }
