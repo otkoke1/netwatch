@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.api.connected_devices import connected_devices_router
 from backend.app.api.network_api import get_subnet
+from backend.app.api.speed_test_api import get_speed
 
 
 app = FastAPI()
@@ -17,6 +18,8 @@ app.add_middleware(
 
 
 app.include_router(get_subnet, prefix="/api")
+
+app.include_router(get_speed, prefix="/api")
 app.include_router(connected_devices_router, prefix="/api")
 
 

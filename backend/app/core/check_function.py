@@ -1,4 +1,6 @@
 import wmi
+import speedtest
+s = speedtest.Speedtest()
 
 def get_device_specs():
     c = wmi.WMI()
