@@ -1,5 +1,4 @@
 import speedtest
-
 def test_internet_speed():
     try:
         st = speedtest.Speedtest()
@@ -16,7 +15,7 @@ def test_internet_speed():
         print("Speed test result:", result)
         return result
 
-    except speedtest.SpeedtestException as e:
+    except Exception as e:
         print("An error occurred during the speed test:", str(e))
         return {
             "download": None,
@@ -24,8 +23,3 @@ def test_internet_speed():
             "ping": None
         }
 
-if __name__ == "__main__":
-    test_internet_speed()
-
-# This script tests the internet speed using the speedtest-cli library.
-#SRC: https://medium.com/@shokomelu/checking-internet-speed-with-a-python-script-1c5485e1a48e

@@ -3,7 +3,7 @@ import { Wrench } from "lucide-react";
 
 export default function ToolsPage() {
   return (
-    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black-700 text-white font-sans flex flex-col relative">
+    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
       {/* Navbar */}
       <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
         <Link to="/" className="block w-fit">
@@ -54,7 +54,7 @@ function NavbarLink({ to, children }) {
 
 function ToolBox({ name, description }) {
   return (
-    <div className="bg-white bg-opacity-20 rounded-xl shadow-md p-6 h-[180px] lg:h-[220px] flex flex-col items-center justify-center text-center text-gray-200 text-lg font-semibold">
+    <div className="bg-white bg-opacity-20 rounded-xl shadow-md p-6 h-[180px] lg:h-[220px] flex flex-col items-center justify-center text-center text-gray-200 text-lg font-semibold transition duration-200 hover:-translate-y-2 hover:shadow-xl">
       <h3 className="text-xl font-bold mb-2">{name}</h3>
       <p className="text-sm">{description}</p>
     </div>

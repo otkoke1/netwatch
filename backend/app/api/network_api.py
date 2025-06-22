@@ -29,6 +29,3 @@ def scan_subnet():
 @get_subnet.get("/health")
 def health_check():
     return {"status": "ok"}
-
-if __name__ == "__main__":
-    print(scan_subnet())

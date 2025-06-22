@@ -14,6 +14,3 @@ def get_connected_devices():
         }
     except Exception as e:
         return {"error": str(e)}
-
-if __name__ == "__main__":
-    print(get_connected_devices())

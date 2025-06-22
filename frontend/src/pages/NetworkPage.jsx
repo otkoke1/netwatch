@@ -12,7 +12,7 @@ export default function NetworkPage() {
   }, []);
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-r from-orange-950  to-black-700 text-white font-sans flex flex-col relative overflow-y-auto">
+    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col relative overflow-y-auto">
       {/* Navbar */}
         <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
           <Link to="/" className="block w-fit">
