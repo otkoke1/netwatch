@@ -17,5 +17,4 @@ def scan_ports(target_ip, port_range='1-1024'):
     except Exception as e:
         print(f"Error scanning ports: {e}")
 
-# Example usage
-scan_ports('192.168.100.1')
+scan_ports('8.8.8.8')

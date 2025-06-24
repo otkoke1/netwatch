@@ -29,9 +29,9 @@ export default function ToolsPage() {
       {/* Tools Section */}
       <section className="py-12 px-4 lg:px-16">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <ToolBox name="Ping Test" description="Check connectivity to a specific host" />
-          <ToolBox name="Traceroute" description="Trace the path packets take to a host" />
-          <ToolBox name="Port Scanner" description="Scan for open ports on a host" />
+          <ToolBox name="Ping Test" description="Check connectivity to a specific host" to="/tools/pingtest"/>
+          <ToolBox name="Traceroute" description="Trace the path packets take to a host" to="/tools/traceroute"/>
+          <ToolBox name="Port Scanner" description="Scan for open ports on a host" to="/tools/portscan" />
         </div>
       </section>
 
@@ -52,11 +52,11 @@ function NavbarLink({ to, children }) {
   );
 }
 
-function ToolBox({ name, description }) {
+function ToolBox({ name, description, to }) {
   return (
-    <div className="bg-white bg-opacity-20 rounded-xl shadow-md p-6 h-[180px] lg:h-[220px] flex flex-col items-center justify-center text-center text-gray-200 text-lg font-semibold transition duration-200 hover:-translate-y-2 hover:shadow-xl">
+    <Link to={to} className="bg-white bg-opacity-20 rounded-xl shadow-md p-6 h-[180px] lg:h-[220px] flex flex-col items-center justify-center text-center text-gray-200 text-lg font-semibold transition duration-200 hover:-translate-y-2 hover:shadow-xl hover:text-gray-200">
       <h3 className="text-xl font-bold mb-2">{name}</h3>
       <p className="text-sm">{description}</p>
-    </div>
+    </Link>
   );
 }

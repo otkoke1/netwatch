@@ -7,6 +7,8 @@ import RTScanPage from "./pages/RTScanPage.jsx";
 import NetworkPage from "./pages/NetworkPage.jsx";
 import InternetPage from "./pages/InternetPage.jsx";
 import ToolsPage from "./pages/ToolsPage.jsx";
+import TraceRoute from "./pages/tools/TraceRoute.jsx";
+import PortScan from "./pages/tools/PortScan.jsx";
 
 function App() {
   return (
@@ -17,7 +19,8 @@ function App() {
         <Route path="/network" element={<NetworkPage /> } />
         <Route path="/internet" element={<InternetPage />} />
         <Route path="/tools" element={<ToolsPage />} />
-      </Routes>
+          <Route path="/tools/traceroute" element={<TraceRoute />} />
+        <Route path="/tools/portscan" element={<PortScan />} />      </Routes>
     </BrowserRouter>
   );
 }
