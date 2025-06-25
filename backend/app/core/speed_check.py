@@ -3,8 +3,8 @@ def test_internet_speed():
     try:
         st = speedtest.Speedtest()
         print("Testing internet speed...")
-        download_speed = st.download() / 2000000
-        upload_speed = st.upload() / 2000000
+        download_speed = st.download() / 1000000
+        upload_speed = st.upload() / 1000000
         ping = st.results.ping
 
         result = {
