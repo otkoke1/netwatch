@@ -1,7 +1,36 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Wifi } from "lucide-react";
 
 export default function PingTest() {
+  const [host, setHost] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+    const handlePing = async (e) => {
+      e.preventDefault(); // Prevent page navigation
+      setLoading(true);
+      setError("");
+      setResult(null);
+      try {
+        const res = await fetch("http://localhost:8000/api/pingresult", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ host }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.detail || "Ping Failed");
+        } else {
+          setResult(data);
+        }
+      } catch (err) {
+        setError("Failed to ping the host.");
+      }
+      setLoading(false);
+    };
+
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
       {/* Navbar */}
@@ -32,11 +61,44 @@ export default function PingTest() {
           <input
             type="text"
             placeholder="Website domain name or IP"
+            value={host}
+            onChange={(e) => setHost(e.target.value)}
             className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"
           />
-          <button className="ml-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg px-6 py-2">
-            Start
+          <button
+            className="ml-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg px-6 py-2"
+            onClick={handlePing}
+            disabled={loading}
+          >
+            {loading ? "Pinging..." : "Start"}
           </button>
+        </div>
+      </section>
+
+      {/* Result Section */}
+      <section className="py-12 px-4 lg:px-16">
+        <div className="max-w-6xl mx-auto text-center">
+          {error && <p className="text-red-400">{error}</p>}
+          {result && (
+            <div className="grid grid-cols-4 gap-4 border-t border-gray-500 pt-4">
+              <div>
+                <h3 className="text-lg font-bold">Target Host</h3>
+                <p className="text-gray-300">{result.target_host}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Address</h3>
+                <p className="text-gray-300">{result.address}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Provider</h3>
+                <p className="text-gray-300">{result.provider}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Location</h3>
+                <p className="text-gray-300">{result.location}</p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

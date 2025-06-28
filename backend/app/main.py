@@ -5,6 +5,7 @@ from backend.app.api.connected_devices import connected_devices_router
 from backend.app.api.network_api import get_subnet
 from backend.app.api.speed_test_api import get_speed
 from backend.app.api.port_scan_api import get_open_ports
+from backend.app.api.ping_test_api import get_ping_result
 
 
 app = FastAPI()
@@ -19,10 +20,10 @@ app.add_middleware(
 
 
 app.include_router(get_subnet, prefix="/api")
-
 app.include_router(get_speed, prefix="/api")
 app.include_router(connected_devices_router, prefix="/api")
 app.include_router(get_open_ports, prefix="/api")
+app.include_router(get_ping_result, prefix="/api")
 
 
 

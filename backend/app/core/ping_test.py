@@ -3,9 +3,8 @@ import time
 import socket
 import requests
 
-def ping_test():
-    host = input("Enter the host to ping (e.g., google.com): ")
-    count = 30
+def ping_test(host):
+    count = 20
 
     try:
         host_ip = socket.gethostbyname(host)
@@ -41,16 +40,17 @@ def ping_test():
     loss_percent = (loss / count) * 100
     avg = round(sum(rtt_list)/len(rtt_list), 2) if rtt_list else 0
 
-
-
-
-    print(f" Address: {host_ip}")
-    print(f" Provider: {provider}")
-    print(f" Location: {location}")
-    print(f" Target host: {host}")
-    print(f" Number of success ping: {success}/{count}")
-    print(f" Packet loss: {round(loss_percent, 2)} %")
-    print(f" Average Ping: {avg} ms")
+    return {
+        "target_host": host,
+        "address": host_ip,
+        "provider": provider,
+        "location": location,
+        "success_count": success,
+        "total_count": count,
+        "packet_loss_percent": round(loss_percent, 2),
+        "average_ping_ms": avg,
+        "rtt_list": rtt_list,
+    }
 
 if __name__ == "__main__":
     ping_test()
