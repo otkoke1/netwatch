@@ -28,7 +28,7 @@ export default function TraceRoute() {
         {/* Input bar */}
         <section className="py-8 px-4 lg:px-16 flex justify-center">
         <div className="flex items-center bg-white bg-opacity-10 rounded-lg shadow-md p-4">
-          <input type="text" placeholder="Enter address" className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"/>
+          <input type="text" placeholder="Enter domain name" className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"/>
           <button className="ml-4 bg-orange-700 hover:bg-orange-800 text-white font-semibold rounded-lg px-6 py-2">
             Start
           </button>

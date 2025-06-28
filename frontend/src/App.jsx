@@ -9,6 +9,7 @@ import InternetPage from "./pages/InternetPage.jsx";
 import ToolsPage from "./pages/ToolsPage.jsx";
 import TraceRoute from "./pages/tools/TraceRoute.jsx";
 import PortScan from "./pages/tools/PortScan.jsx";
+import PingTest from "./pages/tools/PingTest.jsx";
 
 function App() {
   return (
@@ -19,8 +20,10 @@ function App() {
         <Route path="/network" element={<NetworkPage /> } />
         <Route path="/internet" element={<InternetPage />} />
         <Route path="/tools" element={<ToolsPage />} />
-          <Route path="/tools/traceroute" element={<TraceRoute />} />
-        <Route path="/tools/portscan" element={<PortScan />} />      </Routes>
+        <Route path="/tools/traceroute" element={<TraceRoute />} />
+        <Route path="/tools/portscan" element={<PortScan />} />
+        <Route path="/tools/pingtest" element={<PingTest />} />
+      </Routes>
     </BrowserRouter>
   );
 }

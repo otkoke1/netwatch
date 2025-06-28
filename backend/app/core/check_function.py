@@ -16,7 +16,7 @@ def packet_callback(pkt):
 
 
 # Chạy sniff
-print("🔍 Listening for packets... Press Ctrl+C to stop.")
+print("Listening for packet.")
 sniff(filter="ip", prn=packet_callback, store=0)
 
 

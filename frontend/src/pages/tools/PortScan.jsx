@@ -59,7 +59,7 @@ export default function PortScan() {
         <div className="flex items-center bg-white bg-opacity-10 rounded-lg shadow-md p-4">
           <input
             type="text"
-            placeholder="Enter address"
+            placeholder="Website domain name or IP"
             value={address}
             onChange={e => setAddress(e.target.value)}
             className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"
