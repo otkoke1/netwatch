@@ -6,6 +6,7 @@ from backend.app.api.network_api import get_subnet
 from backend.app.api.speed_test_api import get_speed
 from backend.app.api.port_scan_api import get_open_ports
 from backend.app.api.ping_test_api import get_ping_result
+from backend.app.api.trace_route_api import get_traceroute_router
 
 
 app = FastAPI()
@@ -24,6 +25,7 @@ app.include_router(get_speed, prefix="/api")
 app.include_router(connected_devices_router, prefix="/api")
 app.include_router(get_open_ports, prefix="/api")
 app.include_router(get_ping_result, prefix="/api")
+app.include_router(get_traceroute_router, prefix="/api")
 
 
 

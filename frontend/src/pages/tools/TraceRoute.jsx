@@ -1,7 +1,36 @@
 import { Link } from "react-router-dom";
 import { MapPin } from "lucide-react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+} from "react-leaflet";
+import {useState} from "react";
+import axios from "axios";
 
 export default function TraceRoute() {
+      const [target, setTarget] = useState("");
+      const [hops, setHops] = useState([]);
+      const [loading, setLoading] = useState(false);
+
+      const handleTrace = async () => {
+        if (!target) return;
+        setLoading(true);
+        setHops([]);
+
+        try {
+          const res = await axios.get(`http://localhost:8000/traceroute?target=${target}`);
+          setHops(res.data);
+        } catch (err) {
+          console.error("Traceroute failed", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+    const validHops = hops.filter((hop) => hop.lat && hop.lon);
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
       {/* Navbar */}
@@ -41,6 +70,41 @@ export default function TraceRoute() {
         </div>
       </section>
 
+      <section className="py-12 px-4 lg:px-16">
+        <div className="max-w-6xl mx-auto text-center">
+          {validHops.length > 0 ? (
+            <MapContainer
+              center={[validHops[0].lat, validHops[0].lon]}
+              zoom={4}
+              scrollWheelZoom={true}
+              style={{ height: "500px", width: "100%", borderRadius: "12px" }}
+            >
+              <TileLayer
+                attribution='© OpenStreetMap'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {validHops.map((hop, idx) => (
+                <Marker key={idx} position={[hop.lat, hop.lon]}>
+                  <Popup>
+                    <div>
+                      <strong>Hop {hop.hop}</strong><br />
+                      IP: {hop.ip}<br />
+                      Status: {hop.status}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+              <Polyline
+                positions={validHops.map((hop) => [hop.lat, hop.lon])}
+                color="orange"
+              />
+            </MapContainer>
+          ) : !loading && (
+            <p className="text-gray-400 text-sm">No result yet.</p>
+          )}
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="text-center py-6 mt-auto">
         <p className="text-sm">© 2025 Netwatch — All rights reserved</p>
@@ -57,3 +121,4 @@ function NavbarLink({ to, children }) {
     </Link>
   );
 }
+
