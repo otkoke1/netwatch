@@ -2,37 +2,45 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Wifi } from "lucide-react";
 
+
 export default function PingTest() {
   const [host, setHost] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-    const handlePing = async (e) => {
-      e.preventDefault(); // Prevent page navigation
-      setLoading(true);
-      setError("");
-      setResult(null);
-      try {
-        const res = await fetch("http://localhost:8000/api/pingresult", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ host }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.detail || "Ping Failed");
-        } else {
-          setResult(data);
-        }
-      } catch (err) {
-        setError("Failed to ping the host.");
-      }
+  const handlePing = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setResult(null);
+
+    if (!host.trim()) {
+      setError("Host cannot be empty.");
       setLoading(false);
-    };
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8000/api/pingresult", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ host }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.detail || "Ping Failed");
+      } else {
+        setResult(data);
+      }
+    } catch (err) {
+      setError("Failed to ping the host.");
+    }
+    setLoading(false);
+  };
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
+    <div className="h-screen w-screen bg-gradient-to-r overflow-auto from-orange-950 to-black text-white font-sans flex flex-col">
       {/* Navbar */}
       <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
         <Link to="/" className="block w-fit">
@@ -80,24 +88,61 @@ export default function PingTest() {
         <div className="max-w-6xl mx-auto text-center">
           {error && <p className="text-red-400">{error}</p>}
           {result && (
-            <div className="grid grid-cols-4 gap-4 border-t border-gray-500 pt-4">
-              <div>
-                <h3 className="text-lg font-bold">Target Host</h3>
-                <p className="text-gray-300">{result.target_host}</p>
+            <>
+              <div className="grid grid-cols-4 gap-4 border-t border-gray-500 pt-4">
+                <div>
+                  <h3 className="text-lg font-bold">Target Host</h3>
+                  <p className="text-gray-300">{result.target_host}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Address</h3>
+                  <p className="text-gray-300">{result.address}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Provider</h3>
+                  <p className="text-gray-300">{result.provider}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Location</h3>
+                  <p className="text-gray-300">{result.location}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold">Address</h3>
-                <p className="text-gray-300">{result.address}</p>
+
+              {/* Statistics Section */}
+              <div className="mt-8 bg-white bg-opacity-10 rounded-lg shadow-md p-4">
+                <h3 className="text-lg font-bold mb-4">Ping Result</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-gray-300">Average Ping:</p>
+                    <p className="text-white font-semibold">{result.average_ping_ms} ms</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-300">Minimum Ping:</p>
+                    <p className="text-white font-semibold">
+                      {result.rtt_list.length ? Math.min(...result.rtt_list) : "-"} ms
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-300">Maximum Ping:</p>
+                    <p className="text-white font-semibold">
+                      {result.rtt_list.length ? Math.max(...result.rtt_list) : "-"} ms
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-300">Packet Loss:</p>
+                    <p className="text-white font-semibold">{result.packet_loss_percent}%</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-300">Received (Total):</p>
+                    <p className="text-white font-semibold">{result.success_count}/{result.total_count}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-300">Jitter:</p>
+                    <p className="text-white font-semibold">{result.jitter_ms} ms</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold">Provider</h3>
-                <p className="text-gray-300">{result.provider}</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">Location</h3>
-                <p className="text-gray-300">{result.location}</p>
-              </div>
-            </div>
+            </>
           )}
         </div>
       </section>
@@ -118,3 +163,4 @@ function NavbarLink({ to, children }) {
     </Link>
   );
 }
+

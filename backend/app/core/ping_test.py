@@ -2,7 +2,7 @@ from ping3 import ping
 import time
 import socket
 import requests
-
+import math
 def ping_test(host):
     count = 20
 
@@ -40,6 +40,11 @@ def ping_test(host):
     loss_percent = (loss / count) * 100
     avg = round(sum(rtt_list)/len(rtt_list), 2) if rtt_list else 0
 
+    if rtt_list:
+        jitter = round(math.sqrt(sum((x - avg) ** 2 for x in rtt_list) / len(rtt_list)), 2)
+    else:
+        jitter = 0
+
     return {
         "target_host": host,
         "address": host_ip,
@@ -49,6 +54,7 @@ def ping_test(host):
         "total_count": count,
         "packet_loss_percent": round(loss_percent, 2),
         "average_ping_ms": avg,
+        "jitter_ms": jitter,
         "rtt_list": rtt_list,
     }
 
