@@ -23,37 +23,45 @@ def host_availability_check(ip):
     except Exception:
         return False
 
-def live_host_discovery(verbose=False):
+def live_host_discovery(verbose=False, timeout=3, retry=2):
+    import os
     iface_name = find_active_interface()
     subnet = str(get_local_subnet())
     print(f"[*] Scanning subnet: {subnet} on interface: {iface_name}")
-    packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=subnet)
-    ans, _ = srp(packet, timeout=2 , verbose=False, iface=iface_name)
 
-    hosts = []
-    now = time.strftime('%Y-%m-%d %H:%M:%S')
-    for _, rcv in ans:
-        ip = rcv.psrc
-        mac = rcv.hwsrc
-        hostname = get_hostname(ip)
-        availability = host_availability_check(ip)
+    # Optional: Clear ARP cache (Windows/Linux only, may require admin)
+    if platform.system().lower() == "windows":
+        os.system("arp -d *")
+    elif platform.system().lower() == "linux":
+        os.system("ip -s -s neigh flush all")
 
-        hosts.append({
-            "IP Address": ip,
-            "Mac Address": mac,
-            "Hostname" : hostname,
-            "Last Heard": now,
-            "Availability": availability,
-            "Response Time": None
-        })
+    hosts = {}
+    for _ in range(retry):
+        packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=subnet)
+        ans, _ = srp(packet, timeout=timeout, verbose=False, iface=iface_name)
+        now = time.strftime('%Y-%m-%d %H:%M:%S')
+        for _, rcv in ans:
+            ip = rcv.psrc
+            mac = rcv.hwsrc
+            if ip not in hosts:  # Avoid duplicates
+                hostname = get_hostname(ip)
+                availability = host_availability_check(ip)
+                hosts[ip] = {
+                    "IP Address": ip,
+                    "Mac Address": mac,
+                    "Hostname": hostname,
+                    "Last Heard": now,
+                    "Availability": availability,
+                    "Response Time": None
+                }
+    host_list = list(hosts.values())
     if verbose:
-        if not hosts:
+        if not host_list:
             print("[!] No response received")
         else:
-            print(tabulate(hosts, headers="keys", tablefmt="fancy-grid"))
-            print(f"Total Hosts Discovered: {len(hosts)}")
-
-    return hosts
+            print(tabulate(host_list, headers="keys", tablefmt="fancy-grid"))
+            print(f"Total Hosts Discovered: {len(host_list)}")
+    return host_list
 
 
 

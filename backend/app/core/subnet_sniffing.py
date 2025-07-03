@@ -1,13 +1,9 @@
-import platform
 import socket
 import ipaddress
-import subprocess
 import netifaces
 import pythoncom
 import wmi
 from netifaces import AF_INET
-from netmiko.cli_tools.outputters import output_raw
-from pygments.lexer import default
 from scapy.layers.l2 import Ether, ARP, srp
 
 
@@ -62,7 +58,7 @@ def find_active_interface():
     c = wmi.WMI()
     for adapter in c.Win32_NetworkAdapter():
         if adapter.NetEnabled:
-            return adapter.NetConnectionID  # Return the interface name
+            return adapter.NetConnectionID
     return None
 
 def get_personal_device_specs():

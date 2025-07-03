@@ -1,38 +1,31 @@
 import { Link } from "react-router-dom";
 import { MapPin } from "lucide-react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  Polyline,
-} from "react-leaflet";
-import {useState} from "react";
-import axios from "axios";
+import { useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 export default function TraceRoute() {
-      const [target, setTarget] = useState("");
-      const [hops, setHops] = useState([]);
-      const [loading, setLoading] = useState(false);
+  const [hops, setHops] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [target, setTarget] = useState("");
 
-      const handleTrace = async () => {
-        if (!target) return;
-        setLoading(true);
-        setHops([]);
+    async function handleTraceroute() {
+      if (!target) return;
+      setLoading(true);
+      setHops([]);
+      try {
+        const res = await fetch('http://localhost:8000/api/traceroute?target=' + encodeURIComponent(target));
+        const hopsData = await res.json();
+        setHops(hopsData.filter(hop => hop.ip));
+      } catch (e) {
+        console.error("Traceroute error:", e);
+        alert("Failed to fetch traceroute results.");
+      }
+      setLoading(false);
+    }
 
-        try {
-          const res = await axios.get(`http://localhost:8000/traceroute?target=${target}`);
-          setHops(res.data);
-        } catch (err) {
-          console.error("Traceroute failed", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-    const validHops = hops.filter((hop) => hop.lat && hop.lon);
   return (
-    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
+    <div className="h-screen w-screen overflow-auto bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
       {/* Navbar */}
       <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
         <Link to="/" className="block w-fit">
@@ -54,54 +47,54 @@ export default function TraceRoute() {
         <MapPin size={40} className="text-white mx-auto mt-6" />
       </section>
 
-        {/* Input bar */}
-        <section className="py-8 px-4 lg:px-16 flex justify-center">
+      {/* Input bar */}
+      <section className="py-8 px-4 lg:px-16 flex justify-center">
         <div className="flex items-center bg-white bg-opacity-10 rounded-lg shadow-md p-4">
-          <input type="text" placeholder="Enter domain name" className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"/>
-          <button className="ml-4 bg-orange-700 hover:bg-orange-800 text-white font-semibold rounded-lg px-6 py-2">
-            Start
+          <input
+            type="text"
+            placeholder="Enter domain name"
+            className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"
+            value={target}
+            onChange={e => setTarget(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleTraceroute()}
+          />
+          <button
+            className="ml-4 bg-orange-700 hover:bg-orange-800 text-white font-semibold rounded-lg px-6 py-2"
+            onClick={handleTraceroute}
+            disabled={loading}>
+            {loading ? "Tracing..." : "Start"}
           </button>
-        </div>
-        </section>
-
-      {/* Content Section */}
-      <section className="py-12 px-4 lg:px-16">
-        <div className="max-w-6xl mx-auto text-center">
         </div>
       </section>
 
+      {/* Results */}
       <section className="py-12 px-4 lg:px-16">
-        <div className="max-w-6xl mx-auto text-center">
-          {validHops.length > 0 ? (
-            <MapContainer
-              center={[validHops[0].lat, validHops[0].lon]}
-              zoom={4}
-              scrollWheelZoom={true}
-              style={{ height: "500px", width: "100%", borderRadius: "12px" }}
-            >
-              <TileLayer
-                attribution='© OpenStreetMap'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {validHops.map((hop, idx) => (
-                <Marker key={idx} position={[hop.lat, hop.lon]}>
-                  <Popup>
-                    <div>
-                      <strong>Hop {hop.hop}</strong><br />
-                      IP: {hop.ip}<br />
-                      Status: {hop.status}
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-              <Polyline
-                positions={validHops.map((hop) => [hop.lat, hop.lon])}
-                color="orange"
-              />
-            </MapContainer>
-          ) : !loading && (
-            <p className="text-gray-400 text-sm">No result yet.</p>
-          )}
+        <div className="max-w-6xl mx-auto text-center">{hops.length > 0 && (
+          <div className="overflow-x-auto mb-8">
+            <table className="min-w-full bg-white bg-opacity-10 rounded-lg text-left">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2">Hop</th>
+                  <th className="px-4 py-2">IP Address</th>
+                  <th className="px-4 py-2">Status</th>
+                  <th className="px-4 py-2">City</th>
+                  <th className="px-4 py-2">Country</th>
+                </tr>
+              </thead>
+              <tbody>
+                {hops.map((hop, idx) => (
+                  <tr key={idx} className="border-b border-white border-opacity-10">
+                    <td className="px-4 py-2">{hop.hop}</td>
+                    <td className="px-4 py-2">{hop.ip || <span className="text-gray-400">No response</span>}</td>
+                    <td className="px-4 py-2 capitalize">{hop.status}</td>
+                    <td className="px-4 py-2">{hop.city === null ? "Private/Reserved" : hop.city}</td>
+                    <td className="px-4 py-2">{hop.country === null ? "Private/Reserved" : hop.country}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         </div>
       </section>
 
@@ -121,4 +114,3 @@ function NavbarLink({ to, children }) {
     </Link>
   );
 }
-
