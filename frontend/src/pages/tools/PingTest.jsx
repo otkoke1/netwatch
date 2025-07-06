@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Wifi } from "lucide-react";
-
+import PingLineChart from "../PingChart.jsx";
 
 export default function PingTest() {
   const [host, setHost] = useState("");
@@ -142,6 +142,12 @@ export default function PingTest() {
                   </div>
                 </div>
               </div>
+              {result?.rtt_list?.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-bold mb-4">Ping Timeline</h3>
+                  <PingLineChart data={result.rtt_list} />
+                </div>
+              )}
             </>
           )}
         </div>
