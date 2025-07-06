@@ -4,10 +4,16 @@ import netifaces
 from tabulate import tabulate
 from tabnanny import verbose
 import subprocess
+import ctypes
 from scapy.all import *
 from scapy.layers.l2 import Ether, ARP
 from backend.app.core.subnet_sniffing import get_local_subnet, find_active_interface
 
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except Exception:
+        return False
 
 def get_hostname(ip):
     try:
@@ -23,7 +29,7 @@ def host_availability_check(ip):
     except Exception:
         return False
 
-def live_host_discovery(verbose=False, timeout=3, retry=2):
+def live_host_discovery(verbose=False, timeout=0.3, retry=1, resolve_hostname=False, check_availability=False):
     import os
     iface_name = find_active_interface()
     subnet = str(get_local_subnet())
@@ -31,7 +37,10 @@ def live_host_discovery(verbose=False, timeout=3, retry=2):
 
     # Optional: Clear ARP cache (Windows/Linux only, may require admin)
     if platform.system().lower() == "windows":
-        os.system("arp -d *")
+        if is_admin():
+            os.system("arp -d *")
+        else:
+            print("[!] Skipping ARP cache clear: requires admin privileges.")
     elif platform.system().lower() == "linux":
         os.system("ip -s -s neigh flush all")
 
