@@ -8,8 +8,18 @@ from backend.app.api.port_scan_api import get_open_ports
 from backend.app.api.ping_test_api import get_ping_result
 from backend.app.api.trace_route_api import get_traceroute_router
 
+from contextlib import asynccontextmanager
+import threading
+from backend.app.api.realtime_api import realtime_router
+from backend.app.core.rtscan_activity import start_sniffing
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    t = threading.Thread(target=start_sniffing, daemon=True)
+    t.start()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,14 +29,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 app.include_router(get_subnet, prefix="/api")
 app.include_router(get_speed, prefix="/api")
 app.include_router(connected_devices_router, prefix="/api")
 app.include_router(get_open_ports, prefix="/api")
 app.include_router(get_ping_result, prefix="/api")
 app.include_router(get_traceroute_router, prefix="/api")
+app.include_router(realtime_router, prefix="/api")
 
+
+for route in app.routes:
+    print(route.path)
 
 
 if __name__ == "__main__":

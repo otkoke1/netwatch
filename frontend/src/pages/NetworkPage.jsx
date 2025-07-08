@@ -1,15 +1,22 @@
 import { Link } from "react-router-dom";
 import {Globe} from "lucide-react";
-import {useEffect, useState} from "react";
+import { useEffect } from "react";
+import { useNetworkInfo } from "./context/NetworkContext";
 
 export default function NetworkPage() {
-  const [networkInfo, setNetworkInfo] = useState(null);
+  const { networkInfo, setNetworkInfo, fetched, setFetched } = useNetworkInfo();
+
   useEffect(() => {
-    fetch("http://localhost:8000/api/networkinfo")
-      .then(response => response.json())
-      .then(data => setNetworkInfo(data))
-      .catch(error => console.error("Error fetching network info:", error));
-  }, []);
+    if (!fetched) {
+      fetch("http://localhost:8000/api/networkinfo")
+        .then(response => response.json())
+        .then(data => {
+          setNetworkInfo(data);
+          setFetched(true);
+        })
+        .catch(error => console.error("Error fetching network info:", error));
+    }
+  }, [fetched]);
 
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col relative overflow-y-auto">

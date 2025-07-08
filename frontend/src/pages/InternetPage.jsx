@@ -1,16 +1,21 @@
 import { Link } from "react-router-dom";
 import { Wifi } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useSpeedTest } from "./context/SpeedTestContext";
 
 export default function InternetPage() {
-  const [speedInfo, setSpeedInfo] = useState(null);
-
+  const { speedInfo, setSpeedInfo, fetched, setFetched } = useSpeedTest();
   useEffect(() => {
-    fetch("http://localhost:8000/api/speedtest")
-      .then(response => response.json())
-      .then(data => setSpeedInfo(data))
-      .catch(error => console.error("Error fetching speed test data:", error));
-  }, []);
+    if (!fetched) {
+      fetch("http://localhost:8000/api/speedtest")
+        .then(res => res.json())
+        .then(data => {
+          setSpeedInfo(data);
+          setFetched(true);
+        })
+        .catch(err => console.error("Speedtest fetch error:", err));
+    }
+  }, [fetched]);
 
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">

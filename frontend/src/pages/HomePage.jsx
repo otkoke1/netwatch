@@ -1,39 +1,46 @@
 import { Link } from "react-router-dom";
 import { Router, MonitorSmartphone } from "lucide-react";
-import { useEffect, useState } from "react";
-
-function NavbarLink({ to, children }) {
-  return (
-    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
-      {children}
-    </Link>
-  );
-}
+import { useEffect } from "react";
+import {useNetworkInfo} from "./context/NetworkContext.jsx";
+import {useDeviceInfo} from "./context/DeviceContext.jsx";
 
 export default function HomePage() {
-    const [networkInfo, setNetworkInfo] = useState(null);
-    const [connectedDevices, setConnectedDevices] = useState([]);
+  const {networkInfo, setNetworkInfo, fetched: networkFetched, setFetched: setNetworkFetched} = useNetworkInfo();
+  const {connectedDevices, setConnectedDevices, fetched: deviceFetched, setFetched: setDeviceFetched} = useDeviceInfo();
 
-    useEffect(() => {
-    fetch("http://localhost:8000/api/networkinfo")
-        .then(response => response.json())
-        .then(data => setNetworkInfo(data))
-        .catch(error => console.error("Error fetching network info:", error));
-
-    fetch("http://localhost:8000/api/connected-devices")
-        .then(response => response.json())
-        .then(data => {
-            if (data.total_devices !== undefined) {
-                setConnectedDevices(data.total_devices);
-            }
+  useEffect(() => {
+    if (!networkFetched) {
+      fetch("http://localhost:8000/api/networkinfo")
+        .then((response) => response.json())
+        .then((data) => {
+          setNetworkInfo(data);
+          setNetworkFetched(true);
         })
-        .catch(error => console.error("Error fetching connected devices:", error));
-    }, []);
+        .catch((error) => console.error("Error fetching network info from Home:", error));
+    }
+  }, [networkFetched]);
 
-    const featureBoxes = [
+  useEffect(() => {
+    if (!deviceFetched) {
+      fetch("http://localhost:8000/api/connected-devices")
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.total_devices !== undefined) {
+            setConnectedDevices(data.total_devices);
+            setDeviceFetched(true);
+          }
+        })
+        .catch((error) =>
+          console.error("Error fetching connected devices from Home:", error)
+        );
+    }
+  }, [deviceFetched]);
+
+  const featureBoxes = [
       {
         name: "Connected Devices",
-        description: connectedDevices > 0
+        description:
+            connectedDevices !== null
           ? `Total Devices: ${connectedDevices}`
           : "Findind Devices..."
       },
@@ -106,5 +113,13 @@ export default function HomePage() {
         <p className="text-xs opacity-70 mt-1">Contact us at dhung1838ygw@gmail.com</p>
       </footer>
     </div>
+  );
+}
+
+function NavbarLink({ to, children }) {
+  return (
+    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
+      {children}
+    </Link>
   );
 }
