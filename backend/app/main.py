@@ -11,10 +11,12 @@ from backend.app.api.trace_route_api import get_traceroute_router
 from contextlib import asynccontextmanager
 import threading
 from backend.app.api.realtime_api import realtime_router
-from backend.app.core.rtscan_activity import start_sniffing
+from backend.app.core.rtscan_activity import start_sniffing, reset_protocol_stat
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    reset_protocol_stat()
     t = threading.Thread(target=start_sniffing, daemon=True)
     t.start()
     yield

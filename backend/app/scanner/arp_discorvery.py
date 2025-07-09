@@ -1,5 +1,5 @@
 import platform
-
+from ipaddress import ip_network
 import netifaces
 from tabulate import tabulate
 from tabnanny import verbose
@@ -16,10 +16,47 @@ def is_admin():
         return False
 
 def get_hostname(ip):
+    import socket
     try:
-        return socket.gethostbyaddr(ip)[0]
+        hostname = socket.gethostbyaddr(ip)[0]
+        if hostname and hostname != ip:
+            return hostname
     except Exception:
-        return "Unknown Hostname"
+        pass
+    try:
+        result = subprocess.run(
+            ["nmap", "-sn", "-R", ip],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            timeout=5
+        )
+        for line in result.stdout.splitlines():
+            if line.startswith("Nmap scan report for"):
+                line = line.strip()
+                # Case: with hostname (hostname (ip))
+                if "(" in line and ")" in line:
+                    hostname = line.split("for")[1].split("(")[0].strip()
+                    if hostname and hostname != ip:
+                        return hostname
+                else:
+                    continue
+    except Exception:
+        pass
+
+    if platform.system().lower() == "windows":
+        try:
+            output = subprocess.check_output(["arp", "-a"], text=True)
+            for line in output.splitlines():
+                if ip in line:
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        return "Detected-" + parts[0]
+        except Exception:
+            pass
+
+    return "Unknown Hostname"
+
 
 def host_availability_check(ip):
     param = '-n' if platform.system().lower() == 'windows' else '-c'
@@ -56,12 +93,12 @@ def live_host_discovery(verbose=False, timeout=0.3, retry=1, resolve_hostname=Fa
                 hostname = get_hostname(ip)
                 availability = host_availability_check(ip)
                 hosts[ip] = {
-                    "IP Address": ip,
-                    "Mac Address": mac,
-                    "Hostname": hostname,
-                    "Last Heard": now,
-                    "Availability": availability,
-                    "Response Time": None
+                    "ip": ip,
+                    "mac": mac,
+                    "hostname": hostname,
+                    "last_seen": now,
+                    "available": availability,
+                    "response_time": None
                 }
     host_list = list(hosts.values())
     if verbose:

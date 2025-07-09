@@ -9,32 +9,27 @@ export default function HomePage() {
   const {connectedDevices, setConnectedDevices, fetched: deviceFetched, setFetched: setDeviceFetched} = useDeviceInfo();
 
   useEffect(() => {
-    if (!networkFetched) {
-      fetch("http://localhost:8000/api/networkinfo")
-        .then((response) => response.json())
-        .then((data) => {
-          setNetworkInfo(data);
-          setNetworkFetched(true);
-        })
-        .catch((error) => console.error("Error fetching network info from Home:", error));
-    }
-  }, [networkFetched]);
+    fetch("http://localhost:8000/api/networkinfo")
+      .then((response) => response.json())
+      .then((data) => {
+        setNetworkInfo(data);
+      })
+      .catch((error) => console.error("Error fetching network info from Home:", error));
+  }, []);
+
 
   useEffect(() => {
-    if (!deviceFetched) {
-      fetch("http://localhost:8000/api/connected-devices")
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.total_devices !== undefined) {
-            setConnectedDevices(data.total_devices);
-            setDeviceFetched(true);
-          }
-        })
-        .catch((error) =>
-          console.error("Error fetching connected devices from Home:", error)
-        );
-    }
-  }, [deviceFetched]);
+    fetch("http://localhost:8000/api/connected-devices")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.total_devices !== undefined) {
+          setConnectedDevices(data.total_devices);
+        }
+      })
+      .catch((error) =>
+        console.error("Error fetching connected devices from Home:", error)
+      );
+  }, []);
 
   const featureBoxes = [
       {

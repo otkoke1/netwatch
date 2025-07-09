@@ -1,48 +1,60 @@
 import { Link } from "react-router-dom";
-import {Globe} from "lucide-react";
+import { Globe } from "lucide-react";
 import { useEffect } from "react";
 import { useNetworkInfo } from "./context/NetworkContext";
+import { useDeviceInfo } from "./context/DeviceContext";
 
 export default function NetworkPage() {
-  const { networkInfo, setNetworkInfo, fetched, setFetched } = useNetworkInfo();
+  const { networkInfo, setNetworkInfo } = useNetworkInfo();
+  const { deviceList, setDeviceList } = useDeviceInfo();
 
+  // Fetch network info
   useEffect(() => {
-    if (!fetched) {
-      fetch("http://localhost:8000/api/networkinfo")
-        .then(response => response.json())
-        .then(data => {
-          setNetworkInfo(data);
-          setFetched(true);
-        })
-        .catch(error => console.error("Error fetching network info:", error));
-    }
-  }, [fetched]);
+    fetch("http://localhost:8000/api/networkinfo")
+      .then((response) => response.json())
+      .then((data) => {
+        setNetworkInfo(data);
+      })
+      .catch((error) => console.error("Error fetching network info:", error));
+  }, []);
+
+  // Fetch connected devices
+  useEffect(() => {
+    fetch("http://localhost:8000/api/connected-devices")
+      .then((res) => res.json())
+      .then((data) => {
+        setDeviceList(data.devices || []);
+      })
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
 
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col relative overflow-y-auto">
       {/* Navbar */}
-        <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
-          <Link to="/" className="block w-fit">
-            <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
-              Netwatch
-            </h1>
-          </Link>
-          <nav className="flex gap-8 justify-start ml-auto">
-            <NavbarLink to="/network">Network</NavbarLink>
-            <NavbarLink to="/internet">Internet</NavbarLink>
-            <NavbarLink to="/tools">Tools</NavbarLink>
-            <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
-          </nav>
-        </header>
+      <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
+        <Link to="/" className="block w-fit">
+          <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
+            Netwatch
+          </h1>
+        </Link>
+        <nav className="flex gap-8 justify-start ml-auto">
+          <NavbarLink to="/network">Network</NavbarLink>
+          <NavbarLink to="/internet">Internet</NavbarLink>
+          <NavbarLink to="/tools">Tools</NavbarLink>
+          <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
+        </nav>
+      </header>
 
       {/* Hero Section */}
       <section className="py-16 px-4 lg:px-16 text-center relative">
         <h2 className="text-3xl lg:text-4xl font-bold mb-4">Network Monitoring</h2>
-        <p className="text-md lg:text-lg text-gray-200">Keep track of your network details and configurations</p>
+        <p className="text-md lg:text-lg text-gray-200">
+          Keep track of your network details and configurations
+        </p>
         <Globe size={40} className="text-white mx-auto mt-6" />
       </section>
 
-      {/* Network Information Section */}
+      {/* Network Info Table */}
       <section className="py-12 px-4 lg:px-16">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
@@ -52,31 +64,72 @@ export default function NetworkPage() {
             </p>
           </div>
           {networkInfo ? (
-          <table className="w-full rounded-lg shadow-md">
-            <tbody className="text-gray-200 text-sm">
-              <Row label="Subnet" value={networkInfo.subnet} />
-              <Row label="Gateway IP Address" value={networkInfo.gateway_ip} />
-              <Row label="Gateway MAC Address" value={networkInfo.gateway_mac} />
-              <Row label="Local IP" value={networkInfo.local_ip} />
-              <Row label="Interface Type" value={networkInfo.interface_type} />
-            </tbody>
-          </table>
-              ) : (
-                  <p className="text-gray-400 text-sm">Loading network info...</p>
-              )}
+            <table className="w-full rounded-lg shadow-md">
+              <tbody className="text-gray-200 text-sm">
+                <Row label="Subnet" value={networkInfo.subnet} />
+                <Row label="Gateway IP Address" value={networkInfo.gateway_ip} />
+                <Row label="Gateway MAC Address" value={networkInfo.gateway_mac} />
+                <Row label="Local IP" value={networkInfo.local_ip} />
+                <Row label="Interface Type" value={networkInfo.interface_type} />
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-400 text-sm">Loading network info...</p>
+          )}
         </div>
       </section>
 
-        {/* Devices Section */}
-        <section className="py-12 px-4 lg:px-16">
-            <div className="max-w-6xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-2xl font-bold text-white">Devices</h3>
-              </div>
-            </div>
-        </section>
-
-
+      {/* Devices Section */}
+      <section className="py-12 px-4 lg:px-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold text-white">Devices</h3>
+          </div>
+          <div className="overflow-x-auto rounded-md shadow-md border border-gray-700">
+            <table className="w-full text-left text-sm text-gray-200">
+              <thead className="bg-white/10">
+                <tr>
+                  <th className="px-4 py-3 border-b border-gray-700">IP Address</th>
+                  <th className="px-4 py-3 border-b border-gray-700">MAC Address</th>
+                  <th className="px-4 py-3 border-b border-gray-700">Hostname</th>
+                  <th className="px-4 py-3 border-b border-gray-700">Status</th>
+                  <th className="px-4 py-3 border-b border-gray-700">Last Seen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deviceList.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="text-center text-gray-400 py-6 animate-pulse">
+                      Loading Devices.
+                    </td>
+                  </tr>
+                ) : (
+                  deviceList.map((device, idx) => (
+                    <tr
+                      key={idx}
+                      className="border-b border-gray-800 hover:bg-white/5 transition-colors duration-150"
+                    >
+                      <td className="px-4 py-3">{device.ip}</td>
+                      <td className="px-4 py-3">{device.mac}</td>
+                      <td className="px-4 py-3">{device.hostname}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`font-semibold ${
+                            device.available ? "text-green-400" : "text-red-400"
+                          }`}
+                        >
+                          {device.available ? "Online" : "Offline"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">{device.last_seen}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="text-center py-6 mt-auto">
@@ -89,7 +142,10 @@ export default function NetworkPage() {
 
 function NavbarLink({ to, children }) {
   return (
-    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
+    <Link
+      to={to}
+      className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg"
+    >
       {children}
     </Link>
   );
