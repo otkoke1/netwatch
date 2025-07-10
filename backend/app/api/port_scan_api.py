@@ -11,6 +11,6 @@ class ScanRequest(BaseModel):
 def port_scan(request: ScanRequest):
     try:
         result = scan_ports(request.address)
-        return {"Open Ports": result}
+        return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -13,10 +13,10 @@ export default function HomePage() {
       .then((response) => response.json())
       .then((data) => {
         setNetworkInfo(data);
+        setNetworkFetched(true)
       })
       .catch((error) => console.error("Error fetching network info from Home:", error));
   }, []);
-
 
   useEffect(() => {
     fetch("http://localhost:8000/api/connected-devices")
@@ -24,6 +24,7 @@ export default function HomePage() {
       .then((data) => {
         if (data.total_devices !== undefined) {
           setConnectedDevices(data.total_devices);
+          setDeviceFetched(true);
         }
       })
       .catch((error) =>

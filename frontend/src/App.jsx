@@ -10,6 +10,7 @@ import ToolsPage from "./pages/ToolsPage.jsx";
 import TraceRoute from "./pages/tools/TraceRoute.jsx";
 import PortScan from "./pages/tools/PortScan.jsx";
 import PingTest from "./pages/tools/PingTest.jsx";
+import DeviceDetail from "./pages/tools/DeviceDetails.jsx";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/tools/traceroute" element={<TraceRoute />} />
         <Route path="/tools/portscan" element={<PortScan />} />
         <Route path="/tools/pingtest" element={<PingTest />} />
+        <Route path="/device/:ip" element={<DeviceDetail />} />
       </Routes>
     </BrowserRouter>
   );

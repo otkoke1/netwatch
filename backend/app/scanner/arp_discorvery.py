@@ -1,62 +1,15 @@
 import platform
-from ipaddress import ip_network
-import netifaces
 from tabulate import tabulate
-from tabnanny import verbose
-import subprocess
-import ctypes
 from scapy.all import *
 from scapy.layers.l2 import Ether, ARP
 from backend.app.core.subnet_sniffing import get_local_subnet, find_active_interface
+from mac_vendor_lookup import MacLookup
 
 def is_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
     except Exception:
         return False
-
-def get_hostname(ip):
-    import socket
-    try:
-        hostname = socket.gethostbyaddr(ip)[0]
-        if hostname and hostname != ip:
-            return hostname
-    except Exception:
-        pass
-    try:
-        result = subprocess.run(
-            ["nmap", "-sn", "-R", ip],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            text=True,
-            timeout=5
-        )
-        for line in result.stdout.splitlines():
-            if line.startswith("Nmap scan report for"):
-                line = line.strip()
-                # Case: with hostname (hostname (ip))
-                if "(" in line and ")" in line:
-                    hostname = line.split("for")[1].split("(")[0].strip()
-                    if hostname and hostname != ip:
-                        return hostname
-                else:
-                    continue
-    except Exception:
-        pass
-
-    if platform.system().lower() == "windows":
-        try:
-            output = subprocess.check_output(["arp", "-a"], text=True)
-            for line in output.splitlines():
-                if ip in line:
-                    parts = line.split()
-                    if len(parts) >= 2:
-                        return "Detected-" + parts[0]
-        except Exception:
-            pass
-
-    return "Unknown Hostname"
-
 
 def host_availability_check(ip):
     param = '-n' if platform.system().lower() == 'windows' else '-c'
@@ -67,6 +20,7 @@ def host_availability_check(ip):
         return False
 
 def live_host_discovery(verbose=False, timeout=0.3, retry=1, resolve_hostname=False, check_availability=False):
+    mac_lookup = MacLookup()
     import os
     iface_name = find_active_interface()
     subnet = str(get_local_subnet())
@@ -90,12 +44,15 @@ def live_host_discovery(verbose=False, timeout=0.3, retry=1, resolve_hostname=Fa
             ip = rcv.psrc
             mac = rcv.hwsrc
             if ip not in hosts:  # Avoid duplicates
-                hostname = get_hostname(ip)
                 availability = host_availability_check(ip)
+                try:
+                    vendor = mac_lookup.lookup(mac)
+                except Exception:
+                    vendor = "Unknown Vendor"
                 hosts[ip] = {
                     "ip": ip,
                     "mac": mac,
-                    "hostname": hostname,
+                    "vendor": vendor,
                     "last_seen": now,
                     "available": availability,
                     "response_time": None

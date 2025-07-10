@@ -3,30 +3,31 @@ import { Globe } from "lucide-react";
 import { useEffect } from "react";
 import { useNetworkInfo } from "./context/NetworkContext";
 import { useDeviceInfo } from "./context/DeviceContext";
+import { useNavigate } from "react-router-dom";
+
 
 export default function NetworkPage() {
   const { networkInfo, setNetworkInfo } = useNetworkInfo();
   const { deviceList, setDeviceList } = useDeviceInfo();
+  const navigate = useNavigate();
 
-  // Fetch network info
   useEffect(() => {
-    fetch("http://localhost:8000/api/networkinfo")
-      .then((response) => response.json())
-      .then((data) => {
-        setNetworkInfo(data);
-      })
-      .catch((error) => console.error("Error fetching network info:", error));
-  }, []);
+    if (!networkInfo) {
+      fetch("http://localhost:8000/api/networkinfo")
+        .then((res) => res.json())
+        .then((data) => setNetworkInfo(data))
+        .catch((err) => console.error("Error fetching network info:", err));
+    }
+  }, [networkInfo]);
 
-  // Fetch connected devices
   useEffect(() => {
-    fetch("http://localhost:8000/api/connected-devices")
-      .then((res) => res.json())
-      .then((data) => {
-        setDeviceList(data.devices || []);
-      })
-      .catch((err) => console.error("Fetch error:", err));
-  }, []);
+    if (deviceList.length === 0) {
+      fetch("http://localhost:8000/api/connected-devices")
+        .then((res) => res.json())
+        .then((data) => setDeviceList(data.devices || []))
+        .catch((err) => console.error("Error fetching device list:", err));
+    }
+  }, [deviceList]);
 
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col relative overflow-y-auto">
@@ -91,7 +92,7 @@ export default function NetworkPage() {
                 <tr>
                   <th className="px-4 py-3 border-b border-gray-700">IP Address</th>
                   <th className="px-4 py-3 border-b border-gray-700">MAC Address</th>
-                  <th className="px-4 py-3 border-b border-gray-700">Hostname</th>
+                  <th className="px-4 py-3 border-b border-gray-700">Vendor</th>
                   <th className="px-4 py-3 border-b border-gray-700">Status</th>
                   <th className="px-4 py-3 border-b border-gray-700">Last Seen</th>
                 </tr>
@@ -107,11 +108,12 @@ export default function NetworkPage() {
                   deviceList.map((device, idx) => (
                     <tr
                       key={idx}
+                      onClick={() => navigate(`/device/${device.ip}`)}
                       className="border-b border-gray-800 hover:bg-white/5 transition-colors duration-150"
                     >
                       <td className="px-4 py-3">{device.ip}</td>
                       <td className="px-4 py-3">{device.mac}</td>
-                      <td className="px-4 py-3">{device.hostname}</td>
+                      <td className="px-4 py-3">{device.vendor || "Unknown"}</td>
                       <td className="px-4 py-3">
                         <span
                           className={`font-semibold ${
