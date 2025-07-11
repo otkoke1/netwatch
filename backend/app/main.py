@@ -7,16 +7,18 @@ from backend.app.api.speed_test_api import get_speed
 from backend.app.api.port_scan_api import get_open_ports
 from backend.app.api.ping_test_api import get_ping_result
 from backend.app.api.trace_route_api import get_traceroute_router
-
 from contextlib import asynccontextmanager
 import threading
 from backend.app.api.realtime_api import realtime_router
 from backend.app.core.rtscan_activity import start_sniffing, reset_protocol_stat
+from backend.app.api.auth_router import auth_router
+from backend.app.db.Database import init_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     reset_protocol_stat()
+    init_db()
     t = threading.Thread(target=start_sniffing, daemon=True)
     t.start()
     yield
@@ -25,7 +27,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,6 +40,9 @@ app.include_router(get_open_ports, prefix="/api")
 app.include_router(get_ping_result, prefix="/api")
 app.include_router(get_traceroute_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+
+
 
 
 for route in app.routes:
