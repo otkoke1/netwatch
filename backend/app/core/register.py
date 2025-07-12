@@ -7,6 +7,9 @@ class UserCreate(BaseModel):
 class UserOut(BaseModel):
     id: int
     username: str
+    first_name: str | None = None
+    last_name: str | None = None
+    email: str | None = None
 
     class Config:
         orm_mode = True

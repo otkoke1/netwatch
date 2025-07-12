@@ -1,6 +1,5 @@
 import './index.css';
 import './App.css';
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage.jsx';
 import RTScanPage from "./pages/RTScanPage.jsx";
@@ -17,7 +16,11 @@ import {AuthProvider, useAuth} from "./pages/context/AuthContext.jsx";
 import ViewProfilePage from "./pages/ViewProfilePage.jsx";
 
 function PrivateRoute({ children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
   return user ? children : <Navigate to="/login" />;
 }
 
