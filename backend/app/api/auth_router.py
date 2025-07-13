@@ -11,9 +11,8 @@ from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from backend.app.core.pdf_generator import generate_lan_report
 from backend.app.api.connected_devices import get_connected_devices
-from backend.app.api.network_api import get_subnet
 from backend.app.core.speed_check import test_internet_speed
-from backend.app.core.subnet_sniffing import get_local_subnet, get_local_ip, get_gateway_ip
+from backend.app.core.subnet_sniffing import get_local_subnet, get_local_ip, get_gateway_ip, get_gateway_mac, find_active_interface
 
 auth_router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -104,16 +103,24 @@ async def download_lan_info(current_user: User = Depends(get_current_user)):
         subnet = str(get_local_subnet())
         local_ip = str(get_local_ip())
         gateway_ip = str(get_gateway_ip())
+        iface_name = str(find_active_interface())
+        gateway_mac = str(get_gateway_mac(gateway_ip, iface_name))
 
         network_info = {
             "subnet": subnet,
             "local_ip": local_ip,
             "gateway_ip": gateway_ip,
+            "gateway_mac": gateway_mac
         }
 
-        # Get connected devices
+        # Get connected devices using the existing router
         try:
-            devices = await get_connected_devices()
+            device_response = get_connected_devices()
+            if "error" in device_response:
+                print(f"Error in device scan: {device_response['error']}")
+                devices = []
+            else:
+                devices = device_response["devices"]
         except Exception as e:
             print(f"Error getting devices: {str(e)}")
             devices = []

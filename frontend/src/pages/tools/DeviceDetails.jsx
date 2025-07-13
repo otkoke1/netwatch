@@ -1,30 +1,79 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Ban, Gauge, Activity } from "lucide-react";
 import { useDeviceInfo } from "../context/DeviceContext.jsx";
+import { formatBytes, formatBandwidth } from "../context/formatters/byteFormatters.js";
+import { useState, useEffect } from "react";
+
 
 export default function DeviceDetail() {
   const { ip } = useParams();
   const { deviceList } = useDeviceInfo();
   const device = deviceList.find((d) => d.ip === ip);
+  const [networkStats, setNetworkStats] = useState(null);
 
-  const handleLimitUsage = () => {
-    console.log(`[+] Limit Internet Usage for ${device.ip}`);
-    // TODO: Call API or run script
-  };
+  useEffect(() => {
+    const fetchNetworkStats = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/device-usage/${ip}`);
+        const data = await response.json();
+        console.log("Polling network stats:", data);
+        if (data.status === "success") {
+          setNetworkStats(data.data);
+        } else {
+          console.error("Error:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching network stats:", error);
+      }
+    };
+
+    fetchNetworkStats();
+    const interval = setInterval(fetchNetworkStats, 1000);
+    return () => clearInterval(interval);
+  }, [ip]);
 
   const handleBlockInternet = () => {
     console.log(`[+] Block Internet Access for ${device.ip}`);
-    // TODO: Call API or firewall command
   };
 
-  const handlePortScan = () => {
-    console.log(`[+] Check Open Port for ${device.ip}`);
-    // TODO: Redirect to scan result or call API
+const checkNetworkUsage = async () => {
+    try {
+      // Show loading state
+      setNetworkStats(null);
+
+      const response = await fetch(`http://localhost:8000/api/device-usage/${ip}`);
+      const data = await response.json();
+
+      if (data.status === "success" && data.data) {
+        const stats = data.data;
+        setNetworkStats({
+          bytes_sent: parseInt(stats.bytes_sent),
+          bytes_received: parseInt(stats.bytes_received),
+          bandwidth_sent: parseFloat(stats.bandwidth_sent),
+          bandwidth_received: parseFloat(stats.bandwidth_received),
+          packets_sent: parseInt(stats.packets_sent),
+          packets_received: parseInt(stats.packets_received)
+        });
+      } else {
+        console.error("Failed to get network stats:", data.message);
+        // Set default values
+        setNetworkStats({
+          bytes_sent: 0,
+          bytes_received: 0,
+          bandwidth_sent: 0,
+          bandwidth_received: 0,
+          packets_sent: 0,
+          packets_received: 0
+        });
+      }
+    } catch (error) {
+      console.error("Error checking network usage:", error);
+      setNetworkStats(null);
+    }
   };
 
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col px-6 py-10">
-      {/* Back Button */}
+    <div className="h-screen w-screen overflow-auto bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
       <div className="w-full max-w-6xl mx-auto mb-8">
         <Link to="/network" className="flex items-center gap-2 text-white hover:underline">
           <ArrowLeft size={20} />
@@ -56,11 +105,38 @@ export default function DeviceDetail() {
               </tbody>
             </table>
 
+            {/* Network Usage Stats */}
+            {networkStats && (
+              <div className="mb-10 bg-white/5 rounded-xl p-6">
+                <h3 className="text-xl font-semibold mb-4">Network Usage</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <StatsBox
+                    label="Data Sent"
+                    value={formatBytes(networkStats.bytes_sent)}
+                    icon={<Activity className="text-orange-400" />}
+                  />
+                  <StatsBox
+                    label="Data Received"
+                    value={formatBytes(networkStats.bytes_received)}
+                    icon={<Activity className="text-green-400" />}
+                  />
+                  <StatsBox
+                    label="Bandwidth (Send)"
+                    value={formatBandwidth(networkStats.bandwidth_sent)}
+                    icon={<Gauge className="text-orange-400" />}
+                  />
+                  <StatsBox
+                    label="Bandwidth (Receive)"
+                    value={formatBandwidth(networkStats.bandwidth_received)}
+                    icon={<Gauge className="text-green-400" />}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ActionButton icon={<Gauge size={18} />} text="Limit Internet Usage" onClick={handleLimitUsage} />
-              <ActionButton icon={<Ban size={18} />} text="Block Internet Access" onClick={handleBlockInternet} />
-              <ActionButton icon={<Activity size={18} />} text="Check Network Usage " onClick={handlePortScan} />
+              <ActionButton icon={<Activity size={18} />} text="Check Network Usage" onClick={checkNetworkUsage} />
             </div>
           </>
         ) : (
@@ -71,11 +147,23 @@ export default function DeviceDetail() {
   );
 }
 
+function StatsBox({ label, value, icon }) {
+  return (
+    <div className="bg-white/5 rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-2">
+        {icon}
+        <span className="text-gray-400">{label}</span>
+      </div>
+      <p className="text-xl font-bold">{value}</p>
+    </div>
+  );
+}
+
 function Row({ label, value }) {
   return (
-    <tr className="border-b border-gray-700">
-      <td className="px-4 py-3 font-semibold w-1/3">{label}</td>
-      <td className="px-4 py-3">{value}</td>
+    <tr className="border-b border-gray-800">
+      <td className="py-3 text-gray-400">{label}</td>
+      <td className="py-3">{value}</td>
     </tr>
   );
 }
@@ -84,10 +172,10 @@ function ActionButton({ icon, text, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full bg-orange-800 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition duration-200"
+      className="flex items-center justify-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
     >
       {icon}
-      {text}
+      <span>{text}</span>
     </button>
   );
 }

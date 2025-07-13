@@ -28,7 +28,8 @@ def generate_lan_report(user_data, network_info, devices, speed_test):
     network_data = [
         ["Subnet", network_info.get("subnet", "N/A")],
         ["Local IP", network_info.get("local_ip", "N/A")],
-        ["Gateway IP", network_info.get("gateway_ip", "N/A")]
+        ["Gateway IP", network_info.get("gateway_ip", "N/A")],
+        ["Gateway MAC", network_info.get("gateway_mac", "N/A")]
     ]
 
     network_table = Table(network_data, colWidths=[200, 300])
@@ -43,7 +44,6 @@ def generate_lan_report(user_data, network_info, devices, speed_test):
     elements.append(network_table)
     elements.append(Spacer(1, 20))
 
-    # Speed Test Section
     elements.append(Paragraph("Internet Speed Test Results", styles["Heading2"]))
     speed_data = [
         ["Download Speed", f"{speed_test.get('download', 'N/A')} Mbps"],
@@ -62,23 +62,22 @@ def generate_lan_report(user_data, network_info, devices, speed_test):
     elements.append(speed_table)
     elements.append(Spacer(1, 20))
 
-    # Connected Devices Section
     elements.append(Paragraph("Connected Devices Summary", styles["Heading2"]))
     elements.append(Paragraph(f"Total Devices Found: {len(devices)}", styles["Normal"]))
     elements.append(Paragraph(f"Scan Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles["Normal"]))
     elements.append(Spacer(1, 10))
 
     if devices:
-        device_data = [["IP Address", "MAC Address", "Hostname", "Vendor"]]
+        device_data = [["IP Address", "MAC Address", "Last Seen", "Status"]]
         for device in devices:
             device_data.append([
                 device.get("ip", "N/A"),
                 device.get("mac", "N/A"),
-                device.get("hostname", "N/A"),
-                device.get("vendor", "N/A")
+                device.get("last_seen", "N/A"),
+                "Available" if device.get("available", False) else "Unavailable"
             ])
 
-        device_table = Table(device_data, colWidths=[100, 120, 140, 140])
+        device_table = Table(device_data, colWidths=[120, 120, 160, 100])
         device_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
