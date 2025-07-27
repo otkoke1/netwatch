@@ -79,9 +79,11 @@ export default function TraceRoute() {
       {/* Results */}
       <section className="py-12 px-4 lg:px-16">
         <div className="max-w-6xl mx-auto text-center">
-          {hops.length > 0 && (
+          {loading && <LoadingIndicator />}
+
+          {!loading && hops.length > 0 && (
             <>
-              <div className="mb-4 text-lg font-semibold">
+              <div className="mb-4 text-lg font-semibold animate-fade-in">
                 Total hops: {hops.length}
               </div>
               <div className="overflow-x-auto mb-8">
@@ -151,5 +153,22 @@ function NavbarLink({ to, children }) {
     <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
       {children}
     </Link>
+  );
+}
+
+function LoadingIndicator() {
+  return (
+    <div className="flex flex-col items-center space-y-4 my-8">
+      <div className="relative">
+        <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <MapPin className="text-orange-600 animate-pulse" size={16} />
+        </div>
+      </div>
+      <div className="flex flex-col items-center space-y-2">
+        <p className="text-orange-500 font-semibold animate-pulse">Tracing route...</p>
+        <p className="text-sm text-gray-400">This may take a few seconds</p>
+      </div>
+    </div>
   );
 }

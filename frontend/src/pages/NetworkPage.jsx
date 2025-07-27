@@ -7,27 +7,32 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function NetworkPage() {
-  const { networkInfo, setNetworkInfo } = useNetworkInfo();
-  const { deviceList, setDeviceList } = useDeviceInfo();
+  const { networkInfo, setNetworkInfo, fetched: networkFetched, setFetched: setNetworkFetched } = useNetworkInfo();
+  const { deviceList, setDeviceList, setConnectedDevices, fetched: deviceFetched, setFetched: setDeviceFetched } = useDeviceInfo();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!networkInfo) {
+    if (!networkFetched) {
       fetch("http://localhost:8000/api/networkinfo")
-        .then((res) => res.json())
-        .then((data) => setNetworkInfo(data))
-        .catch((err) => console.error("Error fetching network info:", err));
+        .then((response) => response.json())
+        .then((data) => {
+          setNetworkInfo(data);
+          setNetworkFetched(true);
+        })
+        .catch((error) => console.error("Error fetching network info:", error));
     }
-  }, [networkInfo]);
 
-  useEffect(() => {
-    if (deviceList.length === 0) {
+    if (!deviceFetched) {
       fetch("http://localhost:8000/api/connected-devices")
-        .then((res) => res.json())
-        .then((data) => setDeviceList(data.devices || []))
-        .catch((err) => console.error("Error fetching device list:", err));
+        .then((response) => response.json())
+        .then((data) => {
+          setConnectedDevices(data.total_devices);
+          setDeviceList(data.devices || []);
+          setDeviceFetched(true);
+        })
+        .catch((error) => console.error("Error fetching devices:", error));
     }
-  }, [deviceList]);
+  }, []);
 
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col relative overflow-y-auto">

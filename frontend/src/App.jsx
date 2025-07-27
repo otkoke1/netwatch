@@ -17,7 +17,6 @@ import ViewProfilePage from "./pages/ViewProfilePage.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
-
   if (loading) {
     return null;
   }

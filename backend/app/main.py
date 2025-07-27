@@ -8,6 +8,7 @@ from backend.app.api.port_scan_api import get_open_ports
 from backend.app.api.ping_test_api import get_ping_result
 from backend.app.api.trace_route_api import get_traceroute_router
 from contextlib import asynccontextmanager
+from backend.app.api.port_management_api import close_port_router
 import threading
 from backend.app.api.realtime_api import realtime_router
 from backend.app.core.rtscan_activity import start_sniffing, reset_protocol_stat
@@ -43,6 +44,7 @@ app.include_router(get_ping_result, prefix="/api")
 app.include_router(get_traceroute_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
+app.include_router(close_port_router, prefix="/api")
 
 
 

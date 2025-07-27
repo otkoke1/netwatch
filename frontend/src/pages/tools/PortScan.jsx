@@ -1,17 +1,100 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Server } from "lucide-react";
+import { Server, X } from "lucide-react";
+
+function NavbarLink({ to, children }) {
+  return (
+    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
+      {children}
+    </Link>
+  );
+}
+
+function LoadingIndicator() {
+  return (
+    <div className="flex flex-col items-center space-y-4 my-8">
+      <div className="relative">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <Server className="text-blue-600 animate-pulse" size={16} />
+        </div>
+      </div>
+      <div className="flex flex-col items-center space-y-2">
+        <p className="text-blue-500 font-semibold animate-pulse">Scanning ports...</p>
+        <p className="text-sm text-gray-400">This may take a few moments</p>
+      </div>
+    </div>
+  );
+}
+
+function PortPopup({ port, onClose, onConfirm }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+      <div className="bg-gray-900 p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 relative animate-fade-in-up">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+        >
+          <X size={20} />
+        </button>
+        <h3 className="text-xl font-bold mb-4">Port {port}</h3>
+        <p className="text-gray-300 mb-6">
+          Do you want to close this port? This action might affect your system's functionality.
+        </p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+          >
+            No
+          </button>
+          <button
+            onClick={() => {
+              onConfirm(port);
+              onClose();
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          >
+            Yes, Close Port
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PortBadge({ port, isUDP, onClick }) {
+  return (
+    <button
+      onClick={() => onClick(port)}
+      className={`${
+        isUDP ? "bg-orange-700" : "bg-blue-700"
+      } px-3 py-1 rounded hover:opacity-80 transition-opacity animate-fade-in-down cursor-pointer`}
+    >
+      {port}
+    </button>
+  );
+}
 
 export default function PortScan() {
   const [address, setAddress] = useState("");
-  const [openPorts, setOpenPorts] = useState([]);
+  const [tcpResults, setTcpResults] = useState(null);
+  const [udpResults, setUdpResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedPort, setSelectedPort] = useState(null);
 
   const handleScan = async () => {
+    if (tcpResults || udpResults) {
+      setTcpResults(null);
+      setUdpResults(null);
+      setError("");
+      return;
+    }
+
     setLoading(true);
     setError("");
-    setOpenPorts([]);
+
     try {
       const res = await fetch("http://localhost:8000/api/scanports", {
         method: "POST",
@@ -19,21 +102,53 @@ export default function PortScan() {
         body: JSON.stringify({ address }),
       });
       const data = await res.json();
+
       if (!res.ok) {
         setError(data.detail || "Scan Failed");
       } else {
-        setOpenPorts(data["Open Ports"]);
+        setTcpResults(data.tcp);
+        setUdpResults(data.udp);
       }
+    } catch (err) {
+      setError("Failed to scan ports.");
     }
-    catch (err) {
-      setError("Failed to scan for ports.");
-    }
+
     setLoading(false);
   };
 
+  const handlePortClick = (port) => {
+    setSelectedPort(port);
+  };
+
+  const handleClosePort = async (port) => {
+    if (port !== 9999) {
+      setError("Port closing is only supported for port 9999");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8000/api/closeport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address,
+          port
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to close port");
+      }
+
+      // Refresh scan results after closing port
+      handleScan();
+    } catch (err) {
+      setError("Failed to close port: " + err.message);
+    }
+  };
+
   return (
-    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
-      {/* Navbar */}
+    <div className="overflow-auto h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
       <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
         <Link to="/" className="block w-fit">
           <h1 className="text-3xl font-bold tracking-wide cursor-pointer text-white">
@@ -48,14 +163,15 @@ export default function PortScan() {
         </nav>
       </header>
 
-      {/* Hero Section */}
       <section className="py-16 px-4 lg:px-16 text-center relative">
         <h2 className="text-3xl lg:text-4xl font-bold mb-4">Port Scanner</h2>
-        <p className="text-md lg:text-lg text-gray-200">Scan for open ports on a host</p>
+        <p className="text-md lg:text-lg text-gray-200">
+          Scan for any open port to detect services running on a server or security vulnerabilities.
+        </p>
         <Server size={40} className="text-white mx-auto mt-6" />
       </section>
 
-      <section className="py-8 px-4 lg:px-16 flex justify-center">
+      <section className="py-8 px-4 lg:px-16 flex flex-col items-center gap-6">
         <div className="flex items-center bg-white bg-opacity-10 rounded-lg shadow-md p-4">
           <input
             type="text"
@@ -65,46 +181,89 @@ export default function PortScan() {
             className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"
           />
           <button
-            className="ml-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg px-6 py-2"
+            className="ml-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2 transition-all duration-300"
             onClick={handleScan}
             disabled={loading}
           >
-            {loading ? "Scanning..." : "Start"}
+            {loading ? "Scanning..." : (tcpResults || udpResults ? "Scan Again" : "Start Scan")}
           </button>
         </div>
-      </section>
-      <section className="py-12 px-4 lg:px-16">
-        <div className="max-w-6xl mx-auto text-center">
-          {error && <p className="text-red-400">{error}</p>}
-          {openPorts.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold mb-2">Open Ports:</h3>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {openPorts.map(port => (
-                  <span key={port} className="bg-orange-700 px-3 py-1 rounded text-white">{port}</span>
-                ))}
-              </div>
+
+        {loading && <LoadingIndicator />}
+
+        {error && (
+          <p className="text-red-400 animate-fade-in">{error}</p>
+        )}
+
+        {!loading && (tcpResults || udpResults) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
+            <div className="bg-white bg-opacity-10 p-6 rounded-lg transform transition-all duration-300 hover:bg-opacity-15 animate-fade-in">
+              <h3 className="text-xl font-bold mb-4">TCP Ports</h3>
+              {tcpResults && (
+                <div className="space-y-4">
+                  <div className="animate-fade-in">
+                    <p className="text-gray-300 mb-2">Target: {tcpResults.Target}</p>
+                    <p className="text-gray-300 mb-4">IP: {tcpResults["Resolved IP"]}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 animate-fade-in">
+                    {tcpResults["Open Ports"].length > 0 ? (
+                      tcpResults["Open Ports"].map(port => (
+                        <PortBadge
+                          key={port}
+                          port={port}
+                          isUDP={false}
+                          onClick={handlePortClick}
+                        />
+                      ))
+                    ) : (
+                      <p className="text-gray-400">No TCP ports found</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-          {!loading && openPorts.length === 0 && !error && (
-            <p className="text-gray-400">No open ports found or scan not started.</p>
-          )}
-        </div>
+
+            <div className="bg-white bg-opacity-10 p-6 rounded-lg transform transition-all duration-300 hover:bg-opacity-15 animate-fade-in">
+              <h3 className="text-xl font-bold mb-4">UDP Ports</h3>
+              {udpResults && (
+                <div className="space-y-4">
+                  <div className="animate-fade-in">
+                    <p className="text-gray-300 mb-2">Target: {udpResults.Target}</p>
+                    <p className="text-gray-300 mb-4">IP: {udpResults["Resolved IP"]}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 animate-fade-in">
+                    {udpResults["Open Ports"].length > 0 ? (
+                      udpResults["Open Ports"].map(port => (
+                        <PortBadge
+                          key={port}
+                          port={port}
+                          isUDP={true}
+                          onClick={handlePortClick}
+                        />
+                      ))
+                    ) : (
+                      <p className="text-gray-400">No UDP ports found</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* Footer */}
+      {selectedPort && (
+        <PortPopup
+          port={selectedPort}
+          onClose={() => setSelectedPort(null)}
+          onConfirm={handleClosePort}
+        />
+      )}
+
       <footer className="text-center py-6 mt-auto">
         <p className="text-sm">© 2025 Netwatch — All rights reserved</p>
         <p className="text-xs opacity-70 mt-1">Contact us at support@netwatch.io</p>
       </footer>
     </div>
-  );
-}
-
-function NavbarLink({ to, children }) {
-  return (
-    <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
-      {children}
-    </Link>
   );
 }

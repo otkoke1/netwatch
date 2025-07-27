@@ -5,64 +5,86 @@ import {useNetworkInfo} from "./context/NetworkContext.jsx";
 import {useDeviceInfo} from "./context/DeviceContext.jsx";
 import {useAuth} from "./context/AuthContext.jsx";
 import { UserCircle, LogOut, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom"
+import {useSpeedTest} from "./context/SpeedTestContext.jsx";
 
 
 export default function HomePage() {
   const {networkInfo, setNetworkInfo, fetched: networkFetched, setFetched: setNetworkFetched} = useNetworkInfo();
-  const {connectedDevices, setConnectedDevices, fetched: deviceFetched, setFetched: setDeviceFetched} = useDeviceInfo();
+  const {connectedDevices, setConnectedDevices, deviceList, setDeviceList, fetched: deviceFetched, setFetched: setDeviceFetched} = useDeviceInfo();
+  const { speedInfo, setSpeedInfo, fetched: speedFetched, setFetched: setSpeedFetched } = useSpeedTest();
   const { logout, user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef();
   const navigate = useNavigate();
 
-
   useEffect(() => {
-    fetch("http://localhost:8000/api/networkinfo")
-      .then((response) => response.json())
-      .then((data) => {
-        setNetworkInfo(data);
-        setNetworkFetched(true)
-      })
-      .catch((error) => console.error("Error fetching network info from Home:", error));
-  }, []);
+    const loadAllData = async () => {
+      try {
+        // Load network info
+        if (!networkFetched) {
+          const networkResponse = await fetch("http://localhost:8000/api/networkinfo");
+          const networkData = await networkResponse.json();
+          setNetworkInfo(networkData);
+          setNetworkFetched(true);
+        }
 
-  useEffect(() => {
-    fetch("http://localhost:8000/api/connected-devices")
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.total_devices !== undefined) {
-          setConnectedDevices(data.total_devices);
+        // Load devices
+        if (!deviceFetched) {
+          const devicesResponse = await fetch("http://localhost:8000/api/connected-devices");
+          const devicesData = await devicesResponse.json();
+          setConnectedDevices(devicesData.total_devices);
+          setDeviceList(devicesData.devices || []);
           setDeviceFetched(true);
         }
-      })
-      .catch((error) =>
-        console.error("Error fetching connected devices from Home:", error)
-      );
-  }, []);
 
-  useEffect(() => {
-  const handleClickOutside = (e) => {
-    if (menuRef.current && !menuRef.current.contains(e.target)) {
-      setMenuOpen(false);
-    }
-  };
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, []);
+        // Load speed test
+        if (!speedFetched) {
+          const speedResponse = await fetch("http://localhost:8000/api/speedtest");
+          const speedData = await speedResponse.json();
+          setSpeedInfo(speedData);
+          setSpeedFetched(true);
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
+    };
+    loadAllData();
+  }, []);
 
   const featureBoxes = [
       {
         name: "Connected Devices",
-        description:
-            connectedDevices !== null
-          ? `Total Devices: ${connectedDevices}`
-          : "Findind Devices..."
+        description: connectedDevices !== null ? (
+          <div className="animate-fade-in">
+            <span className="text-l text-blue-500 font-bold">
+              Total Devices: {connectedDevices}
+            </span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center space-y-2">
+            <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-gray-300 animate-pulse">Finding Devices...</span>
+          </div>
+        )
       },
       {
         name: "Internet Performance",
-        description: "Testing your internet download and upload"
+        description: speedInfo ? (
+          <div className="space-y-2 animate-fade-in">
+            <div className="text-xl font-bold text-green-600 animate-pulse">
+              ↓ {speedInfo.download.toFixed(1)} Mbps
+            </div>
+            <div className="text-sm opacity-80">
+              ↑ {speedInfo.upload.toFixed(1)} Mbps | {speedInfo.ping.toFixed(0)}ms
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center space-y-2">
+            <div className="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-gray-300 animate-pulse">Testing speed...</span>
+          </div>
+        )
       },
       {
         name: "Security Measurement",
@@ -71,7 +93,7 @@ export default function HomePage() {
     ];
 
     return (
-    <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
+    <div className=" overflow-auto h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
       {/* Navbar */}
         <header className="py-5 px-8 shadow-lg flex items-center w-full z-10 bg-opacity-80">
           <Link to="/" className="block w-fit">

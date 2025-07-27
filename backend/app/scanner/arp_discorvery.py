@@ -26,7 +26,6 @@ def live_host_discovery(verbose=False, timeout=0.3, retry=1, resolve_hostname=Fa
     subnet = str(get_local_subnet())
     print(f"[*] Scanning subnet: {subnet} on interface: {iface_name}")
 
-    # Optional: Clear ARP cache (Windows/Linux only, may require admin)
     if platform.system().lower() == "windows":
         if is_admin():
             os.system("arp -d *")
