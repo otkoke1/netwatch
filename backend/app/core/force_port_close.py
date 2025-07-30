@@ -2,10 +2,8 @@ import os
 import platform
 import subprocess
 
-# backend/app/core/force_port_close.py
 def kill_udp_process():
-    """Function to specifically close UDP port 9999"""
-    port = 9999  # Hardcoded port number
+    port = 9999
     system = platform.system()
 
     if system == "Windows":

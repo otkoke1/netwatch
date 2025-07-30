@@ -9,20 +9,34 @@ export default function TraceRoute() {
   const [hops, setHops] = useState([]);
   const [loading, setLoading] = useState(false);
   const [target, setTarget] = useState("");
+  const [error, setError] = useState("");
+
 
   async function handleTraceroute() {
-    if (!target) return;
-    setLoading(true);
+    setError("");
     setHops([]);
+
+    if (!target.trim()) {
+      setError("Target host cannot be empty.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch('http://localhost:8000/api/traceroute?target=' + encodeURIComponent(target));
       const hopsData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(hopsData.detail || "Traceroute failed");
+      }
+
       setHops(hopsData.filter(hop => hop.ip));
     } catch (e) {
       console.error("Traceroute error:", e);
-      alert("Failed to fetch traceroute results.");
+      setError(e.message || "Failed to fetch traceroute results.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   // Extract coordinates for hops with lat/lon
@@ -75,6 +89,12 @@ export default function TraceRoute() {
           </button>
         </div>
       </section>
+
+      {error && (
+          <div className="mt-4 text-red-400 animate-fade-in-down p-4 bg-red-900 bg-opacity-20 rounded-lg">
+            {error}
+          </div>
+        )}
 
       {/* Results */}
       <section className="py-12 px-4 lg:px-16">

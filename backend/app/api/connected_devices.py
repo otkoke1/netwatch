@@ -35,7 +35,6 @@ def get_device_usage(ip: str):
         if not network_monitor.is_running:
             iface = find_active_interface()
             network_monitor.start_monitoring(iface)
-            # Wait a bit for initial packets
             time.sleep(1)
 
         stats = network_monitor.get_traffic_stats(ip)

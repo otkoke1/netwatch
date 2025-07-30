@@ -95,8 +95,9 @@ export default function NetworkPage() {
             <table className="w-full text-left text-sm text-gray-200">
               <thead className="bg-white/10">
                 <tr>
+                  <th className="px-4 py-3 border-b border-gray-700">Name</th>
                   <th className="px-4 py-3 border-b border-gray-700">IP Address</th>
-                  <th className="px-4 py-3 border-b border-gray-700">MAC Address</th>
+                  <th className="px-4 py-3 border-b border-gray-700">Mac Address</th>
                   <th className="px-4 py-3 border-b border-gray-700">Vendor</th>
                   <th className="px-4 py-3 border-b border-gray-700">Status</th>
                   <th className="px-4 py-3 border-b border-gray-700">Last Seen</th>
@@ -116,6 +117,7 @@ export default function NetworkPage() {
                       onClick={() => navigate(`/device/${device.ip}`)}
                       className="border-b border-gray-800 hover:bg-white/5 transition-colors duration-150"
                     >
+                      <td className="px-4 py-3">{device.name || "Unknown"}</td>
                       <td className="px-4 py-3">{device.ip}</td>
                       <td className="px-4 py-3">{device.mac}</td>
                       <td className="px-4 py-3">{device.vendor || "Unknown"}</td>
