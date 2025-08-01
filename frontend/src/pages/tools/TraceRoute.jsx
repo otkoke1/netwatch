@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
-import { useState } from "react";
+import { MapPin, UserCircle, User, LogOut } from "lucide-react";
+import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import {useAuth} from "../context/AuthContext.jsx";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -10,6 +12,10 @@ export default function TraceRoute() {
   const [loading, setLoading] = useState(false);
   const [target, setTarget] = useState("");
   const [error, setError] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
 
   async function handleTraceroute() {
@@ -62,6 +68,31 @@ export default function TraceRoute() {
           <NavbarLink to="/tools">Tools</NavbarLink>
           <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
         </nav>
+        <div className="relative ml-6" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="text-white hover:text-gray-300 focus:outline-none"
+          >
+            <UserCircle size={32} className="transition-transform hover:scale-105" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 mt-3 w-44 bg-blend-color-burn rounded-xl shadow-xl py-2 z-50 fade-in-up">
+              <button
+                onClick={() => {setMenuOpen(false); navigate("/profile")}}
+                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-blue-600 transition-colors"
+              >
+                <User size={16} className="mr-2" /> View Profile
+              </button>
+              <div className="border-t my-1" />
+              <button
+                onClick={() => {setMenuOpen(false); logout();}}
+                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+              >
+                <LogOut size={16} className="mr-2" /> Logout
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Hero Section */}

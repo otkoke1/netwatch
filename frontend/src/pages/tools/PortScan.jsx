@@ -1,14 +1,17 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Server, X } from "lucide-react";
-
+import { useState, useRef } from "react";
+import {Link, useNavigate} from "react-router-dom";
+import { Server, X, UserCircle, LogOut, User } from "lucide-react";
+import {useAuth} from "../context/AuthContext.jsx";
+import {getPortDescription} from "../context/PortDescription.jsx";
 function NavbarLink({ to, children }) {
+
   return (
     <Link to={to} className="text-white hover:underline transition duration-150 text-sm lg:text-base xl:text-lg">
       {children}
     </Link>
   );
 }
+
 
 function LoadingIndicator() {
   return (
@@ -28,6 +31,8 @@ function LoadingIndicator() {
 }
 
 function PortPopup({ port, onClose, onConfirm }) {
+  const description = getPortDescription(port);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
       <div className="bg-gray-900 p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 relative animate-fade-in-up">
@@ -37,7 +42,8 @@ function PortPopup({ port, onClose, onConfirm }) {
         >
           <X size={20} />
         </button>
-        <h3 className="text-xl font-bold mb-4">Port {port}</h3>
+        <h3 className="text-xl font-bold mb-2">Port {port}</h3>
+        <p className="text-sm text-gray-400 mb-4">{description}</p>
         <p className="text-gray-300 mb-6">
           Do you want to close this port? This action might affect your system's functionality.
         </p>
@@ -83,6 +89,10 @@ export default function PortScan() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedPort, setSelectedPort] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleScan = async () => {
     if (tcpResults || udpResults) {
@@ -120,32 +130,42 @@ export default function PortScan() {
     setSelectedPort(port);
   };
 
-  const handleClosePort = async (port) => {
-    if (port !== 9999) {
-      setError("Port closing is only supported for port 9999");
-      return;
+const handleClosePort = async (port) => {
+    if (port < 9000 || port > 9999) {
+        setError("Ports related to system are not allowed to be closed");
+        return;
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/closeport", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address,
-          port
-        }),
-      });
+        setError("");
+        console.log(`Attempting to close port ${port}`);
 
-      if (!res.ok) {
-        throw new Error("Failed to close port");
-      }
+        const res = await fetch("http://localhost:8000/api/closeport", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                port: parseInt(port),
+                address: address
+            }),
+        });
 
-      // Refresh scan results after closing port
-      handleScan();
+        const data = await res.json();
+        console.log("Server response:", data);
+
+        if (!res.ok) {
+            throw new Error(data.message || "Failed to close port");
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await handleScan();
+
     } catch (err) {
-      setError("Failed to close port: " + err.message);
+        console.error("Port closure error:", err);
+        setError(err.message);
     }
-  };
+};
 
   return (
     <div className="overflow-auto h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
@@ -161,6 +181,31 @@ export default function PortScan() {
           <NavbarLink to="/tools">Tools</NavbarLink>
           <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
         </nav>
+        <div className="relative ml-6" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="text-white hover:text-gray-300 focus:outline-none"
+          >
+            <UserCircle size={32} className="transition-transform hover:scale-105" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 mt-3 w-44 bg-blend-color-burn rounded-xl shadow-xl py-2 z-50 fade-in-up">
+              <button
+                onClick={() => {setMenuOpen(false); navigate("/profile")}}
+                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-blue-600 transition-colors"
+              >
+                <User size={16} className="mr-2" /> View Profile
+              </button>
+              <div className="border-t my-1" />
+              <button
+                onClick={() => {setMenuOpen(false); logout();}}
+                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+              >
+                <LogOut size={16} className="mr-2" /> Logout
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       <section className="py-16 px-4 lg:px-16 text-center relative">

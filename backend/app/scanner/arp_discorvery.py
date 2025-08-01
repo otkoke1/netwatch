@@ -33,18 +33,19 @@ def find_fing_host():
     ip_parts = local_ip.split('.')
     subnet_prefix = '.'.join(ip_parts[:-1])
 
-    # Scan subnet for Fing service
-    for i in range(1, 255):
-        host = f"{subnet_prefix}.{i}"
+    common_ips = ['.1', '.2', '.254']
+    for suffix in common_ips:
+        host = f"{subnet_prefix}{suffix}"
         try:
             test_url = f"http://{host}:49090/1/devices"
-            response = requests.get(test_url, params={"auth": "fing_loc_api123"}, timeout=0.5)
+            response = requests.get(test_url, params={"auth": "fing_loc_api123"}, timeout=0.2)
             if response.status_code == 200:
                 print(f"[*] Found Fing service at {host}")
                 return host
         except:
             continue
     return None
+
 
 
 def get_devices_names():
@@ -87,7 +88,7 @@ def update_device_names(hosts):
     except:
         return hosts
 
-def live_host_discovery(verbose=False, timeout=0.1, retry=2, resolve_hostname=False, check_availability=False):
+def live_host_discovery(verbose=False, timeout=0.2, retry=2, resolve_hostname=False, check_availability=False):
     mac_lookup = MacLookup()
     iface_name = find_active_interface()
     subnet = str(get_local_subnet())

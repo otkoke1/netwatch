@@ -1,39 +1,54 @@
-import os
-import platform
 import subprocess
+import logging
 
-def kill_udp_process():
-    port = 9999
-    system = platform.system()
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
-    if system == "Windows":
+
+def kill_udp_process(port, address=None):
+    logger.debug(f"Attempting to close port {port} for address {address}")
+
+    if not isinstance(port, int):
         try:
-            cmd = 'netstat -ano | findstr /R /C:"UDP.*:9999"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            port = int(port)
+        except (TypeError, ValueError):
+            return {"success": False, "message": "Invalid port number"}
 
-            if not result.stdout.strip():
-                return {"success": False, "message": "No process found using UDP port 9999"}
+    if not (9000 <= port <= 9999):
+        return {"success": False, "message": f"Port {port} is outside allowed range (9000-9999)"}
 
-            pids = set()
-            for line in result.stdout.strip().splitlines():
-                parts = line.split()
-                if parts and parts[-1].isdigit():
-                    pids.add(int(parts[-1]))
-
-            for pid in pids:
-                subprocess.run(f'taskkill /F /PID {pid}', shell=True, check=True)
-
-            return {"success": True, "message": "Successfully closed UDP port 9999"}
-
-        except subprocess.CalledProcessError as e:
-            return {"success": False, "message": f"Failed to kill process: {str(e)}"}
-        except Exception as e:
-            return {"success": False, "message": f"Error: {str(e)}"}
-
-    return {"success": False, "message": "Operation only supported on Windows"}
-
-if __name__ == "__main__":
     try:
-        kill_udp_process()
+        # Simple direct command to find the process
+        cmd = f'netstat -ano | findstr ":{port}"'
+        result = subprocess.check_output(cmd, shell=True, text=True)
+
+        for line in result.strip().split('\n'):
+            if f":{port}" in line and "UDP" in line:
+                try:
+                    # Get the last column (PID)
+                    pid = line.strip().split()[-1]
+                    logger.debug(f"Found process with PID: {pid}")
+
+                    # Force kill the process
+                    kill_cmd = f"taskkill /F /PID {pid}"
+                    logger.debug(f"Executing: {kill_cmd}")
+                    subprocess.call(kill_cmd, shell=True)
+
+                    # Verify port is closed
+                    try:
+                        verify = subprocess.check_output(f'netstat -ano | findstr ":{port}"', shell=True)
+                        return {"success": False, "message": "Port is still in use"}
+                    except subprocess.CalledProcessError:
+                        return {"success": True, "message": f"Successfully closed UDP port {port}"}
+
+                except Exception as e:
+                    logger.error(f"Error during process termination: {str(e)}")
+                    return {"success": False, "message": f"Failed to terminate process: {str(e)}"}
+
+        return {"success": False, "message": f"No process found using port {port}"}
+
+    except subprocess.CalledProcessError:
+        return {"success": False, "message": "No process found"}
     except Exception as e:
-        print(f"[✘] Error: {e}")
+        logger.error(f"Unexpected error: {str(e)}")
+        return {"success": False, "message": f"Error: {str(e)}"}

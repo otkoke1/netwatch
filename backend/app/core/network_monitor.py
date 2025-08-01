@@ -2,7 +2,6 @@ import asyncio
 import pyshark
 import threading
 import time
-from datetime import datetime
 import nest_asyncio
 
 # Apply nest_asyncio to allow nested event loops
@@ -27,11 +26,15 @@ class NetworkMonitor:
         if not self.is_running:
             self.is_running = True
             try:
-                self.capture = pyshark.LiveCapture(interface=interface)
+                self.capture = pyshark.LiveCapture(
+                    interface=interface,
+                    bpf_filter='ip',
+                    use_json=True,
+                )
+                print(f"[+] Starting capture on {interface}")
                 self.monitor_thread = threading.Thread(target=self._monitor_traffic)
                 self.monitor_thread.daemon = True
                 self.monitor_thread.start()
-                print(f"[+] Started monitoring on interface {interface}")
             except Exception as e:
                 print(f"[-] Error starting capture: {e}")
                 self.is_running = False
@@ -55,6 +58,7 @@ class NetworkMonitor:
                 ip_src = packet.ip.src
                 ip_dst = packet.ip.dst
                 length = int(packet.length)
+                current_time = time.time()
 
                 for ip in [ip_src, ip_dst]:
                     if ip not in self.stats:
@@ -65,42 +69,33 @@ class NetworkMonitor:
                             "packets_received": 0,
                             "bandwidth_sent": 0,
                             "bandwidth_received": 0,
-                            "last_update_time": time.time(),
-                            "last_bytes_sent": 0,
-                            "last_bytes_received": 0,
-                            "window_start_time": time.time(),
+                            "window_start_time": current_time,
                             "window_bytes_sent": 0,
                             "window_bytes_received": 0
                         }
 
-                self.stats[ip_src]["bytes_sent"] += length
-                self.stats[ip_src]["packets_sent"] += 1
-                self.stats[ip_dst]["bytes_received"] += length
-                self.stats[ip_dst]["packets_received"] += 1
-
-                current_time = time.time()
-                window_size = 1.0  # 1 second window
-
-                for ip in [ip_src, ip_dst]:
-                    if current_time - self.stats[ip]["window_start_time"] >= window_size:
-                        # Calculate bandwidth in Mbps
-                        if ip == ip_src:
-                            self.stats[ip]["bandwidth_sent"] = (
-                                    self.stats[ip]["window_bytes_sent"] * 8 / 1000000
-                            )
-                            self.stats[ip]["window_bytes_sent"] = length
-                        else:
-                            self.stats[ip]["bandwidth_received"] = (
-                                    self.stats[ip]["window_bytes_received"] * 8 / 1000000
-                            )
-                            self.stats[ip]["window_bytes_received"] = length
-
-                        self.stats[ip]["window_start_time"] = current_time
+                    if ip == ip_src:
+                        self.stats[ip]["bytes_sent"] += length
+                        self.stats[ip]["packets_sent"] += 1
+                        self.stats[ip]["window_bytes_sent"] += length
                     else:
-                        if ip == ip_src:
-                            self.stats[ip]["window_bytes_sent"] += length
-                        else:
-                            self.stats[ip]["window_bytes_received"] += length
+                        self.stats[ip]["bytes_received"] += length
+                        self.stats[ip]["packets_received"] += 1
+                        self.stats[ip]["window_bytes_received"] += length
+
+                    if current_time - self.stats[ip]["window_start_time"] >= 1.0:
+                        # Calculate bandwidth in Mbps
+                        self.stats[ip]["bandwidth_sent"] = (
+                                self.stats[ip]["window_bytes_sent"] * 10
+                        )
+                        self.stats[ip]["bandwidth_received"] = (
+                                self.stats[ip]["window_bytes_received"] * 8
+                        )
+
+                        # Reset window counters
+                        self.stats[ip]["window_bytes_sent"] = 0
+                        self.stats[ip]["window_bytes_received"] = 0
+                        self.stats[ip]["window_start_time"] = current_time
 
         except Exception as e:
             print(f"[-] Error processing packet: {e}")

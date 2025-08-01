@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
 
-export default function AnomalyAlert() {
+export default function AnomalyAlert({ compact = false }) {
   const [anomaly, setAnomaly] = useState(false);
   const [lastChecked, setLastChecked] = useState(null);
   const [percentage, setPercentage] = useState(0);
@@ -27,10 +27,35 @@ export default function AnomalyAlert() {
     return () => clearInterval(interval);
   }, []);
 
+  if (compact) {
+    return (
+      <div className="text-center">
+        {anomaly ? (
+          <div className="animate-pulse">
+            <div className="text-red-400 font-semibold mb-1">
+              Anomaly Detected
+            </div>
+            <div className="text-sm text-red-300">
+              TCP Usage: {percentage}%
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="text-green-400 font-semibold mb-1">
+              Network Secure
+            </div>
+            <div className="text-sm text-green-300">
+              TCP Usage: {percentage}%
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={`rounded-xl p-6 shadow-xl w-full max-w-md transition duration-300
       ${anomaly ? "bg-red-900/30 border border-red-500 text-red-100" : "bg-green-900/20 border border-green-500 text-green-100"}`}>
-
       <div className="flex items-center gap-3 mb-4">
         {anomaly ? <ShieldAlert size={28} className="text-red-300" /> : <ShieldCheck size={28} className="text-green-300" />}
         <h3 className="text-xl font-bold">

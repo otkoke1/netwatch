@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Router, MonitorSmartphone } from "lucide-react";
+import {Router, MonitorSmartphone, AlertTriangle} from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import {useNetworkInfo} from "./context/NetworkContext.jsx";
 import {useDeviceInfo} from "./context/DeviceContext.jsx";
@@ -7,6 +7,7 @@ import {useAuth} from "./context/AuthContext.jsx";
 import { UserCircle, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom"
 import {useSpeedTest} from "./context/SpeedTestContext.jsx";
+import AnomalyAlert from "./context/AnomalyAlert.jsx";
 
 
 export default function HomePage() {
@@ -87,8 +88,15 @@ export default function HomePage() {
         )
       },
       {
-        name: "Security Measurement",
-        description: "Access powerful tools for network management."
+        name: "Security Alerts",
+        description: (
+          <div className="h-full w-full flex flex-col items-center justify-center">
+            <AlertTriangle className="text-yellow-500 mb-2" size={24} />
+            <div className="w-full">
+              <AnomalyAlert compact={true} />
+            </div>
+          </div>
+        )
       },
     ];
 

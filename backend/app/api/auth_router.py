@@ -36,7 +36,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Extract remember_me from form_data, default to False
     remember_me = getattr(form_data, "remember_me", False)
 
     access_token = create_access_token(
@@ -45,7 +44,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@auth_router.get("/auth/me", response_model=UserOut)  # Changed response model
+@auth_router.get("/auth/me", response_model=UserOut)
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
@@ -113,7 +112,6 @@ async def download_lan_info(current_user: User = Depends(get_current_user)):
             "gateway_mac": gateway_mac
         }
 
-        # Get connected devices using the existing router
         try:
             device_response = get_connected_devices()
             if "error" in device_response:
@@ -125,7 +123,6 @@ async def download_lan_info(current_user: User = Depends(get_current_user)):
             print(f"Error getting devices: {str(e)}")
             devices = []
 
-        # Get speed test results
         try:
             speed_result = test_internet_speed()
         except Exception as e:
@@ -136,7 +133,6 @@ async def download_lan_info(current_user: User = Depends(get_current_user)):
                 "ping": "N/A"
             }
 
-        # Generate PDF
         try:
             pdf_buffer = generate_lan_report(
                 user_data={"username": current_user.username},

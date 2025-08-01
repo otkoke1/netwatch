@@ -8,7 +8,6 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import PropTypes from "prop-types";
 
 ChartJS.register(
   LineElement,
@@ -48,7 +47,6 @@ export default function PingLineChart({ data }) {
     ],
   };
 
-  // 👉 Cấu hình options
   const options = {
     responsive: true,
     interaction: {

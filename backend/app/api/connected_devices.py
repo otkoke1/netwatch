@@ -35,17 +35,20 @@ def get_device_usage(ip: str):
         if not network_monitor.is_running:
             iface = find_active_interface()
             network_monitor.start_monitoring(iface)
-            time.sleep(1)
 
         stats = network_monitor.get_traffic_stats(ip)
-        if stats:
+        if not stats:
             return {
                 "status": "success",
-                "data": stats
+                "data": {
+                    "bytes_sent": 0,
+                    "bytes_received": 0,
+                    "packets_sent": 0,
+                    "packets_received": 0,
+                    "bandwidth_sent": 0,
+                    "bandwidth_received": 0
+                }
             }
-        return {
-            "status": "error",
-            "message": "No stats available for this IP"
-        }
+        return {"status": "success", "data": stats}
     except Exception as e:
         return {"status": "error", "message": str(e)}

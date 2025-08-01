@@ -1,26 +1,42 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Ban, Gauge, Activity } from "lucide-react";
+import { ArrowLeft, Gauge, Activity } from "lucide-react";
 import { useDeviceInfo } from "../context/DeviceContext.jsx";
 import { formatBytes, formatBandwidth } from "../context/formatters/byteFormatters.js";
 import { useState, useEffect } from "react";
-
 
 export default function DeviceDetail() {
   const { ip } = useParams();
   const { deviceList } = useDeviceInfo();
   const device = deviceList.find((d) => d.ip === ip);
-  const [networkStats, setNetworkStats] = useState(null);
+  const [networkStats, setNetworkStats] = useState({
+    bytes_sent: 0,
+    bytes_received: 0,
+    bandwidth_sent: 0,
+    bandwidth_received: 0,
+    packets_sent: 0,
+    packets_received: 0
+  });
 
   useEffect(() => {
     const fetchNetworkStats = async () => {
       try {
         const response = await fetch(`http://localhost:8000/api/device-usage/${ip}`);
         const data = await response.json();
-        console.log("Polling network stats:", data);
-        if (data.status === "success") {
-          setNetworkStats(data.data);
-        } else {
-          console.error("Error:", data.message);
+        console.log("Network stats update:", {
+          ip: ip,
+          timestamp: new Date().toISOString(),
+          data: data.data
+        });
+
+        if (data.status === "success" && data.data) {
+          setNetworkStats({
+            bytes_sent: parseInt(data.data.bytes_sent),
+            bytes_received: parseInt(data.data.bytes_received),
+            bandwidth_sent: parseFloat(data.data.bandwidth_sent),
+            bandwidth_received: parseFloat(data.data.bandwidth_received),
+            packets_sent: parseInt(data.data.packets_sent),
+            packets_received: parseInt(data.data.packets_received)
+          });
         }
       } catch (error) {
         console.error("Error fetching network stats:", error);
@@ -28,49 +44,11 @@ export default function DeviceDetail() {
     };
 
     fetchNetworkStats();
+
     const interval = setInterval(fetchNetworkStats, 1000);
+
     return () => clearInterval(interval);
   }, [ip]);
-
-  const handleBlockInternet = () => {
-    console.log(`[+] Block Internet Access for ${device.ip}`);
-  };
-
-const checkNetworkUsage = async () => {
-    try {
-      // Show loading state
-      setNetworkStats(null);
-
-      const response = await fetch(`http://localhost:8000/api/device-usage/${ip}`);
-      const data = await response.json();
-
-      if (data.status === "success" && data.data) {
-        const stats = data.data;
-        setNetworkStats({
-          bytes_sent: parseInt(stats.bytes_sent),
-          bytes_received: parseInt(stats.bytes_received),
-          bandwidth_sent: parseFloat(stats.bandwidth_sent),
-          bandwidth_received: parseFloat(stats.bandwidth_received),
-          packets_sent: parseInt(stats.packets_sent),
-          packets_received: parseInt(stats.packets_received)
-        });
-      } else {
-        console.error("Failed to get network stats:", data.message);
-        // Set default values
-        setNetworkStats({
-          bytes_sent: 0,
-          bytes_received: 0,
-          bandwidth_sent: 0,
-          bandwidth_received: 0,
-          packets_sent: 0,
-          packets_received: 0
-        });
-      }
-    } catch (error) {
-      console.error("Error checking network usage:", error);
-      setNetworkStats(null);
-    }
-  };
 
   return (
     <div className="h-screen w-screen overflow-auto bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col">
@@ -106,37 +84,30 @@ const checkNetworkUsage = async () => {
             </table>
 
             {/* Network Usage Stats */}
-            {networkStats && (
-              <div className="mb-10 bg-white/5 rounded-xl p-6">
-                <h3 className="text-xl font-semibold mb-4">Network Usage</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <StatsBox
-                    label="Data Sent"
-                    value={formatBytes(networkStats.bytes_sent)}
-                    icon={<Activity className="text-orange-400" />}
-                  />
-                  <StatsBox
-                    label="Data Received"
-                    value={formatBytes(networkStats.bytes_received)}
-                    icon={<Activity className="text-green-400" />}
-                  />
-                  <StatsBox
-                    label="Bandwidth (Send)"
-                    value={formatBandwidth(networkStats.bandwidth_sent)}
-                    icon={<Gauge className="text-orange-400" />}
-                  />
-                  <StatsBox
-                    label="Bandwidth (Receive)"
-                    value={formatBandwidth(networkStats.bandwidth_received)}
-                    icon={<Gauge className="text-green-400" />}
-                  />
-                </div>
+            <div className="mb-10 bg-white/5 rounded-xl p-6">
+              <h3 className="text-xl font-semibold mb-4">Network Usage</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatsBox
+                  label="Data Sent"
+                  value={formatBytes(networkStats.bytes_sent)}
+                  icon={<Activity className="text-orange-400" />}
+                />
+                <StatsBox
+                  label="Data Received"
+                  value={formatBytes(networkStats.bytes_received)}
+                  icon={<Activity className="text-green-400" />}
+                />
+                <StatsBox
+                  label="Bandwidth (Send)"
+                  value={formatBandwidth(networkStats.bandwidth_sent)}
+                  icon={<Gauge className="text-orange-400" />}
+                />
+                <StatsBox
+                  label="Bandwidth (Receive)"
+                  value={formatBandwidth(networkStats.bandwidth_received)}
+                  icon={<Gauge className="text-green-400" />}
+                />
               </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ActionButton icon={<Activity size={18} />} text="Check Network Usage" onClick={checkNetworkUsage} />
             </div>
           </>
         ) : (
@@ -165,17 +136,5 @@ function Row({ label, value }) {
       <td className="py-3 text-gray-400">{label}</td>
       <td className="py-3">{value}</td>
     </tr>
-  );
-}
-
-function ActionButton({ icon, text, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center justify-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-    >
-      {icon}
-      <span>{text}</span>
-    </button>
   );
 }

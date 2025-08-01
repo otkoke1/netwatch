@@ -96,8 +96,7 @@ def traceroute(target, max_hops=30):
 
     return hops
 
-
-# Debug trực tiếp
+#Directly run the script to perform a traceroute (just for testing purposes)
 if __name__ == "__main__":
     target = input("[Host] ::: ")
     for hop in traceroute(target):

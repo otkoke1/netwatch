@@ -1,0 +1,65 @@
+export const PORT_DESCRIPTIONS = {
+    // Common TCP ports
+    20: "FTP Data Transfer - File transfer protocol data",
+    21: "FTP Control - File transfer protocol command control",
+    22: "SSH - Secure Shell remote login",
+    23: "Telnet - Remote login service",
+    25: "SMTP - Simple Mail Transfer Protocol",
+    80: "HTTP - HyperText Transfer Protocol",
+    110: "POP3 - Post Office Protocol v3",
+    143: "IMAP - Internet Message Access Protocol",
+    443: "HTTPS - HTTP over TLS/SSL",
+    3306: "MySQL - Database server",
+    3389: "RDP - Remote Desktop Protocol",
+    5432: "PostgreSQL - Database server",
+    8080: "HTTP Alternate - Web server/proxy",
+    26: "SMTP Alternate - Mail service",
+    135: "MS RPC - Microsoft Remote Procedure Call",
+    139: "NetBIOS Session Service",
+    445: "Microsoft-DS - SMB over TCP",
+    1433: "Microsoft SQL Server",
+    1521: "Oracle Database",
+    902: "VMware Server - Used for VM remote console ",
+    912: "Apex Messenger - Used by Apex software ",
+    1723: "PPTP - Point-to-Point Tunneling Protocol",
+    2049: "NFS - Network File System",
+    2375: "Docker Remote API (unsecured)",
+    2376: "Docker Remote API (TLS secured)",
+    24800: "Synergy - Keyboard/Mouse Sharing",
+    25565: "Minecraft Server",
+    27017: "MongoDB Database Server",
+    50000: "SAP - NetWeaver",
+    50070: "Hadoop Namenode Web UI",
+    50075: "Hadoop Datanode Web UI",
+
+    // Common UDP ports
+    53: "DNS - Domain Name System",
+    67: "DHCP Server - Dynamic Host Configuration Protocol",
+    68: "DHCP Client - Dynamic Host Configuration Protocol",
+    69: "TFTP - Trivial File Transfer Protocol",
+    123: "NTP - Network Time Protocol",
+    161: "SNMP - Simple Network Management Protocol",
+    162: "SNMP Trap - SNMP notifications",
+    514: "Syslog - System Logging",
+    500: "IKE - Internet Key Exchange (IPSec VPNs)",
+    4500: "IPSec NAT-T - VPN over NAT",
+    5353: "mDNS - Multicast DNS (Bonjour/Avahi)",
+    6000: "X11 - X Window System",
+    6666: "Alternate services / Botnet activity",
+    6881: "BitTorrent peer communication",
+    6969: "BitTorrent Tracker",
+
+    // Common development ports (9000-9999)
+    9000: "Common development server port",
+    9001: "Common development server port",
+    9090: "Common development server port",
+    9100: "Printer/Print server port",
+    9200: "Elasticsearch HTTP",
+    9300: "Elasticsearch cluster communication",
+    9443: "HTTPS alternate port",
+    9999: "Common development server port"
+};
+
+export const getPortDescription = (port) => {
+    return PORT_DESCRIPTIONS[port] || "Unknown service";
+};

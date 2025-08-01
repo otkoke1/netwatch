@@ -25,10 +25,7 @@ export const AuthProvider = ({ children }) => {
         const currentToken = localToken || sessionToken;
 
         if (currentToken) {
-          // Set token first
           setToken(currentToken);
-
-          // Verify token and get user data
           const userRes = await axios.get("http://localhost:8000/api/auth/me", {
             headers: { Authorization: `Bearer ${currentToken}` },
           });
@@ -79,7 +76,6 @@ export const AuthProvider = ({ children }) => {
 
       setToken(newToken);
 
-      // Fetch user data
       const userRes = await axios.get("http://localhost:8000/api/auth/me", {
         headers: { Authorization: `Bearer ${newToken}` },
       });
@@ -98,7 +94,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   if (loading) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (

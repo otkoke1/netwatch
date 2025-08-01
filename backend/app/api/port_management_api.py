@@ -1,29 +1,35 @@
-# backend/app/api/port_management_api.py
-from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from backend.app.core.force_port_close import kill_udp_process
+from backend.app.core.force_port_close import kill_udp_process, logger
 
 close_port_router = APIRouter()
 
+class PortRequest(BaseModel):
+    port: int
+    address: str | None = None
+
 
 @close_port_router.post("/closeport")
-async def close_port():
-    """Endpoint to close UDP port 9999"""
+async def close_port(req: PortRequest):
     try:
-        result = kill_udp_process()
+        logger.debug(f"Received request to close port {req.port}")
+        result = kill_udp_process(req.port, req.address)
 
-        if not result["success"]:
+        if result["success"]:
             return JSONResponse(
-                status_code=500,
-                content={"detail": result["message"]}
+                status_code=200,
+                content={"message": result["message"]}
+            )
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={"message": result["message"]}
             )
 
-        return JSONResponse(
-            status_code=200,
-            content={"message": result["message"]}
-        )
     except Exception as e:
+        logger.error(f"API error: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"detail": str(e)}
+            content={"message": f"Server error: {str(e)}"}
         )

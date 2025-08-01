@@ -1,15 +1,27 @@
 import { Link } from "react-router-dom";
-import { Globe } from "lucide-react";
-import { useEffect } from "react";
+import { Globe, RefreshCw ,UserCircle, LogOut, User} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useNetworkInfo } from "./context/NetworkContext";
 import { useDeviceInfo } from "./context/DeviceContext";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
 
 export default function NetworkPage() {
   const { networkInfo, setNetworkInfo, fetched: networkFetched, setFetched: setNetworkFetched } = useNetworkInfo();
   const { deviceList, setDeviceList, setConnectedDevices, fetched: deviceFetched, setFetched: setDeviceFetched } = useDeviceInfo();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef();
+  const { logout } = useAuth();
+
+  const refreshData = () => {
+    setIsRescanning(true);
+    setDeviceFetched(false);
+    setDeviceList([]);
+  }
+  const [isRescanning, setIsRescanning] = useState(false);
+
 
   useEffect(() => {
     if (!networkFetched) {
@@ -34,6 +46,12 @@ export default function NetworkPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (deviceFetched && isRescanning) {
+      setIsRescanning(false);
+    }
+  }, [deviceFetched]);
+
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-orange-950 to-black text-white font-sans flex flex-col relative overflow-y-auto">
       {/* Navbar */}
@@ -49,6 +67,31 @@ export default function NetworkPage() {
           <NavbarLink to="/tools">Tools</NavbarLink>
           <NavbarLink to="/rtscan">Real-Time Scan</NavbarLink>
         </nav>
+          <div className="relative ml-6" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="text-white hover:text-gray-300 focus:outline-none"
+          >
+            <UserCircle size={32} className="transition-transform hover:scale-105" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 mt-3 w-44 bg-blend-color-burn rounded-xl shadow-xl py-2 z-50 fade-in-up">
+              <button
+                onClick={() => {setMenuOpen(false); navigate("/profile")}}
+                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-blue-600 transition-colors"
+              >
+                <User size={16} className="mr-2" /> View Profile
+              </button>
+              <div className="border-t my-1" />
+              <button
+                onClick={() => {setMenuOpen(false); logout();}}
+                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+              >
+                <LogOut size={16} className="mr-2" /> Logout
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Hero Section */}
@@ -90,6 +133,10 @@ export default function NetworkPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-2xl font-bold text-white">Devices</h3>
+           <button onClick={refreshData} className="px-4 py-2 bg-orange-700 hover:bg-orange-600 rounded-md text-white transition-colors duration-150 flex items-center gap-2">
+              <RefreshCw size={16} className={isRescanning ? "animate-spin" : ""} />
+              Rescan Network
+            </button>
           </div>
           <div className="overflow-x-auto rounded-md shadow-md border border-gray-700">
             <table className="w-full text-left text-sm text-gray-200">
