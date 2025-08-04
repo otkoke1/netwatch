@@ -54,39 +54,39 @@ export default function HomePage() {
   }, []);
 
   const featureBoxes = [
-      {
-        name: "Connected Devices",
-        description: connectedDevices !== null ? (
-          <div className="animate-fade-in">
-            <span className="text-l text-blue-500 font-bold">
-              Total Devices: {connectedDevices}
-            </span>
+    {
+      name: "Connected Devices",
+      description: connectedDevices !== null ? (
+        <div className="animate-fade-in">
+          <span className="text-l text-blue-500 font-bold">
+            Total Devices: {connectedDevices}
+          </span>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center space-y-2">
+          <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-gray-300 animate-pulse">Finding Devices...</span>
+        </div>
+      )
+    },
+    {
+      name: "Internet Performance",
+      description: speedInfo ? (
+        <div className="space-y-2 animate-fade-in">
+          <div className="text-xl font-bold text-green-600 animate-pulse">
+            ↓ {speedInfo?.download?.toFixed(1) || '0.0'} Mbps
           </div>
-        ) : (
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-gray-300 animate-pulse">Finding Devices...</span>
+          <div className="text-sm opacity-80">
+            ↑ {speedInfo?.upload?.toFixed(1) || '0.0'} Mbps | {speedInfo?.ping?.toFixed(0) || '0'}ms
           </div>
-        )
-      },
-      {
-        name: "Internet Performance",
-        description: speedInfo ? (
-          <div className="space-y-2 animate-fade-in">
-            <div className="text-xl font-bold text-green-600 animate-pulse">
-              ↓ {speedInfo.download.toFixed(1)} Mbps
-            </div>
-            <div className="text-sm opacity-80">
-              ↑ {speedInfo.upload.toFixed(1)} Mbps | {speedInfo.ping.toFixed(0)}ms
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-gray-300 animate-pulse">Testing speed...</span>
-          </div>
-        )
-      },
+        </div>
+      ) : (
+        <div className="flex flex-col items-center space-y-2">
+          <div className="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-gray-300 animate-pulse">Testing speed...</span>
+        </div>
+      )
+    },
       {
         name: "Security Alerts",
         description: (

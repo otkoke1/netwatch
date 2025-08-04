@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {useAuth} from "../context/AuthContext.jsx";
 import {useNavigate} from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -15,35 +15,54 @@ export default function PingTest() {
   const menuRef = useRef();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const [isInternal, setIsInternal] = useState(false);
+  const [networkInfo, setNetworkInfo] = useState(null);
+
+  useEffect(() => {
+    const getNetworkInfo = async () => {
+        try {
+            const res = await fetch("http://localhost:8000/api/networkinfo");
+            const data = await res.json();
+            setNetworkInfo(data);
+        } catch (err) {
+            console.error("Failed to get network info:", err);
+        }
+    };
+    getNetworkInfo();
+  }, []);
+
 
   const handlePing = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setResult(null);
+      e.preventDefault();
+      setLoading(true);
+      setError("");
+      setResult(null);
 
-    if (!host.trim()) {
-      setError("Host cannot be empty.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await fetch("http://localhost:8000/api/pingresult", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ host }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.detail || "Ping Failed");
-      } else {
-        setResult(data);
+      if (!host.trim()) {
+          setError("Host cannot be empty.");
+          setLoading(false);
+          return;
       }
-    } catch (err) {
-      setError("Failed to ping the host.");
-    }
-    setLoading(false);
+
+      try {
+          const res = await fetch("http://localhost:8000/api/pingresult", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                  host,
+                  is_internal: isInternal
+              }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+              setError(data.detail || "Ping Failed");
+          } else {
+              setResult(data);
+          }
+      } catch (err) {
+          setError("Failed to ping the host.");
+      }
+      setLoading(false);
   };
 
   return (
@@ -96,23 +115,40 @@ export default function PingTest() {
       </section>
 
       {/* Input Section */}
-      <section className="py-8 px-4 lg:px-16 flex justify-center">
+      <section className="py-8 px-4 lg:px-16 flex flex-col items-center">
         <div className="flex items-center bg-white bg-opacity-10 rounded-lg shadow-md p-4">
           <input
             type="text"
-            placeholder="Website domain name or IP"
+            placeholder={isInternal ? "Local IP (e.g. 192.168.1.x)" : "Website domain or IP"}
             value={host}
             onChange={(e) => setHost(e.target.value)}
             className="bg-transparent text-white placeholder-gray-400 border-none outline-none rounded-lg px-4 py-2 w-64"
           />
+          <div className="mx-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={isInternal}
+                onChange={(e) => setIsInternal(e.target.checked)}
+                className="form-checkbox h-5 w-5 text-orange-600"
+              />
+              <span className="ml-2 text-white">Internal Network</span>
+            </label>
+          </div>
           <button
-            className="ml-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg px-6 py-2"
+            className="bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg px-6 py-2"
             onClick={handlePing}
             disabled={loading}
           >
             {loading ? "Pinging..." : "Start"}
           </button>
         </div>
+
+        {networkInfo && isInternal && (
+          <div className="mt-4 text-sm text-gray-400">
+            Local Network: {networkInfo.subnet} | Gateway: {networkInfo.gateway_ip}
+          </div>
+        )}
       </section>
 
       {/* Result Section */}

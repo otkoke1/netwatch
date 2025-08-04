@@ -1,10 +1,9 @@
 import nmap
 import socket
 
-def scan_ports(target, port_range='1-1024'):
+def scan_ports(target, port_range='1-1102'):
     scanner = nmap.PortScanner()
     open_ports = []
-
     try:
         # Resolve domain to IP if necessary
         target_ip = socket.gethostbyname(target)
@@ -15,7 +14,6 @@ def scan_ports(target, port_range='1-1024'):
         scanner.scan(hosts=target_ip, arguments=f'-p {port_range}')
     except Exception as e:
         raise Exception(f"Scan failed: {str(e)}")
-
     if target_ip not in scanner.all_hosts():
         return []
 
