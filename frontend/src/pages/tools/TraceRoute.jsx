@@ -97,7 +97,7 @@ export default function TraceRoute() {
 
       {/* Hero Section */}
       <section className="py-16 px-4 lg:px-16 text-center relative">
-        <h2 className="text-3xl lg:text-4xl font-bold mb-4">Traceroute</h2>
+        <h2 className="text-3xl lg:text-4xl font-bold mb-4" >Traceroute</h2>
         <MapPin size={40} className="text-white mx-auto mt-6" />
       </section>
 

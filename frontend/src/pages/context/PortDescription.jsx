@@ -57,7 +57,36 @@ export const PORT_DESCRIPTIONS = {
     9200: "Elasticsearch HTTP",
     9300: "Elasticsearch cluster communication",
     9443: "HTTPS alternate port",
-    9999: "Common development server port"
+    9999: "Common development server port",
+    995: "POP3 over SSL - Secure POP3",
+    993: "IMAP over SSL - Secure IMAP",
+    8443: "HTTPS Alternate - Common in enterprise servers",
+    8888: "HTTP Alternate - Development tools, proxy (e.g., Jupyter)",
+    9998: "Common dev/debug port (admin interfaces)",
+    9950: "Zimbra SMTP service (Zimbra Collaboration Suite)",
+    9876: "Session Data Transport (SDT) - Used by Oracle",
+    8843: "Unifi Controller HTTPS",
+    8081: "HTTP Alternate (e.g., React dev server, APIs)",
+    8010: "iTunes Radio Stream - Apple Audio",
+    8090: "Shoutcast, Icecast, Web streaming",
+    8765: "WebSockets server (development)",
+    8880: "Alternate HTTP (esp. routers, DVRs)",
+    8181: "HTTP alternate (used in embedded devices)",
+    8500: "Consul Web UI - Service Discovery",
+    8600: "Consul DNS Interface",
+    10000: "Webmin - Web-based Linux system management",
+    11211: "Memcached - Caching system",
+    16100: "Multispeak - SCADA energy management",
+    18080: "HTTP alternate, often used in malware C2",
+    27018: "MongoDB shard server",
+    27019: "MongoDB config server",
+    28017: "MongoDB Admin Web Interface",
+    32764: "Backdoor in some routers (SerComm exploit)",
+
+    // Suspicious / malware-associated
+    1337: "Common 'leet' port, often used in testing or malware",
+    31337: "Back Orifice Trojan",
+    49152: "Ephemeral port start (Windows dynamic allocation)",
 };
 
 export const getPortDescription = (port) => {

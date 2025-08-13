@@ -16,8 +16,7 @@ const COLOR_MAP = {
   UDP: "#D97706",
   ICMP: "#7C3AED",
   ARP: "#059669",
-  Other: "#DC2626",
-  Unknown: "#6B7280",
+  Other: "#DC2626"
 };
 
 export default function ProtocolBarChart() {
@@ -41,8 +40,16 @@ export default function ProtocolBarChart() {
     return () => clearInterval(interval);
   }, []);
 
-  const labels = Object.keys(protocolData);
-  const values = Object.values(protocolData);
+  // Filter out anomaly data before creating chart data
+  const filteredData = {};
+  Object.entries(protocolData).forEach(([key, value]) => {
+    if (key.toLowerCase() !== 'anomaly') {
+      filteredData[key] = value;
+    }
+  });
+
+  const labels = Object.keys(filteredData);
+  const values = Object.values(filteredData);
   const total = values.reduce((sum, val) => sum + val, 0);
 
   const barData = {

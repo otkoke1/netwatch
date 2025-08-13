@@ -3,6 +3,7 @@ import pyshark
 import threading
 import time
 import nest_asyncio
+from scapy.all import conf
 
 # Apply nest_asyncio to allow nested event loops
 nest_asyncio.apply()
@@ -14,6 +15,7 @@ class NetworkMonitor:
         self.monitor_thread = None
         self.capture = None
         self._setup_event_loop()
+        self.last_update = {}
 
     def _setup_event_loop(self):
         try:
@@ -30,6 +32,7 @@ class NetworkMonitor:
                     interface=interface,
                     bpf_filter='ip',
                     use_json=True,
+
                 )
                 print(f"[+] Starting capture on {interface}")
                 self.monitor_thread = threading.Thread(target=self._monitor_traffic)
@@ -71,8 +74,11 @@ class NetworkMonitor:
                             "bandwidth_received": 0,
                             "window_start_time": current_time,
                             "window_bytes_sent": 0,
-                            "window_bytes_received": 0
+                            "window_bytes_received": 0,
+                            "last_activity": current_time
                         }
+
+                    self.stats[ip]["last_activity"] = current_time
 
                     if ip == ip_src:
                         self.stats[ip]["bytes_sent"] += length
@@ -83,10 +89,13 @@ class NetworkMonitor:
                         self.stats[ip]["packets_received"] += 1
                         self.stats[ip]["window_bytes_received"] += length
 
+                    # Update bandwidth calculations every second
                     if current_time - self.stats[ip]["window_start_time"] >= 1.0:
-                        # Calculate bandwidth in Mbps
+                        time_diff = current_time - self.stats[ip]["window_start_time"]
+
+                        # Calculate bandwidth in bits per second
                         self.stats[ip]["bandwidth_sent"] = (
-                                self.stats[ip]["window_bytes_sent"] * 10
+                                self.stats[ip]["window_bytes_sent"] * 8
                         )
                         self.stats[ip]["bandwidth_received"] = (
                                 self.stats[ip]["window_bytes_received"] * 8
@@ -103,14 +112,22 @@ class NetworkMonitor:
     def get_traffic_stats(self, ip):
         try:
             stats = self.stats.get(ip)
+            current_time = time.time()
+
             if stats:
+                if current_time - stats.get("last_activity", 0) > 5:
+                    # Reset bandwidth if no recent activity
+                    stats["bandwidth_sent"] = 0
+                    stats["bandwidth_received"] = 0
+
                 return {
                     "bytes_sent": int(stats["bytes_sent"]),
                     "bytes_received": int(stats["bytes_received"]),
                     "packets_sent": int(stats["packets_sent"]),
                     "packets_received": int(stats["packets_received"]),
                     "bandwidth_sent": float(stats["bandwidth_sent"]),
-                    "bandwidth_received": float(stats["bandwidth_received"])
+                    "bandwidth_received": float(stats["bandwidth_received"]),
+                    "last_activity": stats["last_activity"]
                 }
             return None
         except Exception as e:

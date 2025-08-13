@@ -63,7 +63,7 @@ export default function RTScanPage() {
       </section>
 
       <section className="py-12 px-4 lg:px-16 flex flex-col lg:flex-row gap-8 justify-center">
-        {/* Pie Chart */}
+        {/* Pie Chart (this is actually bar chart) */}
         <div className="flex-1 max-w-2xl">
           <ProtocolPieChart />
         </div>

@@ -18,23 +18,19 @@ def kill_udp_process(port, address=None):
         return {"success": False, "message": f"Port {port} is outside allowed range (9000-9999)"}
 
     try:
-        # Simple direct command to find the process
         cmd = f'netstat -ano | findstr ":{port}"'
         result = subprocess.check_output(cmd, shell=True, text=True)
 
         for line in result.strip().split('\n'):
             if f":{port}" in line and "UDP" in line:
                 try:
-                    # Get the last column (PID)
                     pid = line.strip().split()[-1]
                     logger.debug(f"Found process with PID: {pid}")
 
-                    # Force kill the process
                     kill_cmd = f"taskkill /F /PID {pid}"
                     logger.debug(f"Executing: {kill_cmd}")
                     subprocess.call(kill_cmd, shell=True)
 
-                    # Verify port is closed
                     try:
                         verify = subprocess.check_output(f'netstat -ano | findstr ":{port}"', shell=True)
                         return {"success": False, "message": "Port is still in use"}

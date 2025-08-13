@@ -6,8 +6,8 @@ from backend.app.db.crud import get_user_by_username
 
 SECRET_KEY = "super-secret-key"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-REMEMBER_ME_EXPIRE_DAYS = 30  #
+ACCESS_TOKEN_EXPIRE_MINUTES = 180
+REMEMBER_ME_EXPIRE_DAYS = 30
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

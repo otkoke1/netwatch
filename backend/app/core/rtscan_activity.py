@@ -45,4 +45,3 @@ def get_protocol_stat():
 def reset_protocol_stat():
     with lock:
         protocol_counter.clear()
-

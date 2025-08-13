@@ -33,12 +33,12 @@ def find_fing_host():
     ip_parts = local_ip.split('.')
     subnet_prefix = '.'.join(ip_parts[:-1])
 
-    common_ips = ['.1', '.2', '.254']
+    common_ips = ['.1', '.2', '.175', '.254', '.255']
     for suffix in common_ips:
         host = f"{subnet_prefix}{suffix}"
         try:
             test_url = f"http://{host}:49090/1/devices"
-            response = requests.get(test_url, params={"auth": "fing_loc_api123"}, timeout=0.2)
+            response = requests.get(test_url, params={"auth": "fing_loc_api123"}, timeout=0.3)
             if response.status_code == 200:
                 print(f"[*] Found Fing service at {host}")
                 return host
