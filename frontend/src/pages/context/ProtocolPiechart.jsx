@@ -19,7 +19,7 @@ const COLOR_MAP = {
   Other: "#DC2626"
 };
 
-export default function ProtocolBarChart() {
+export default function ProtocolPieChart() {
   const [protocolData, setProtocolData] = useState({});
   const [lastUpdated, setLastUpdated] = useState(null);
 
